@@ -1,0 +1,41 @@
+{
+  "name": "kajabi-chatbot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "import:knowledge": "tsx scripts/import-knowledge.ts",
+    "import:knowledge:de": "tsx scripts/import-knowledge.ts --course-id=dsu-de --language=de --file=data/knowledge-de.json",
+    "import:knowledge:en": "tsx scripts/import-knowledge.ts --course-id=dsu-en --language=en --file=data/knowledge-en.json",
+    "test:search": "tsx scripts/test-search.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
+    "dotenv": "^17.4.2",
+    "fuse.js": "^7.4.2",
+    "lucide-react": "^1.21.0",
+    "next": "16.2.9",
+    "openai": "^6.44.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "tsx": "^4.22.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
