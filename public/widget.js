@@ -46,6 +46,9 @@
     iframe.style.background = "transparent";
     iframe.style.overflow = "hidden";
 
+    iframe.style.transition =
+        "width 240ms ease, height 240ms ease, right 240ms ease, bottom 240ms ease";
+
     iframe.setAttribute("allowtransparency", "true");
     iframe.setAttribute("allow", "clipboard-write");
     iframe.setAttribute("loading", "eager");

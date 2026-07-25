@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
     ArrowUp,
     BookOpen,
+    ChevronLeft,
     Expand,
     RotateCcw,
     Shrink,
@@ -45,6 +46,8 @@ type SseEvent = {
 };
 
 const MAX_STORED_MESSAGES = 30;
+const LAUNCHER_COLLAPSED_STORAGE_KEY =
+    `${clientCourseConfig.storageKey}-launcher-collapsed`;
 
 const INITIAL_MESSAGES: Message[] = [
     {
@@ -137,6 +140,10 @@ export default function ChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] =
         useState(false);
+    const [isLauncherCollapsed, setIsLauncherCollapsed] =
+        useState(false);
+    const [isLauncherReady, setIsLauncherReady] =
+        useState(false);
 
     const [messages, setMessages] =
         useState<Message[]>(INITIAL_MESSAGES);
@@ -154,6 +161,18 @@ export default function ChatWidget() {
     useEffect(() => {
         setMessages(loadStoredMessages());
         setIsStorageReady(true);
+
+        try {
+            const storedValue = window.localStorage.getItem(
+                LAUNCHER_COLLAPSED_STORAGE_KEY
+            );
+
+            setIsLauncherCollapsed(storedValue === "true");
+        } catch {
+            setIsLauncherCollapsed(false);
+        } finally {
+            setIsLauncherReady(true);
+        }
     }, []);
 
     useEffect(() => {
@@ -165,30 +184,44 @@ export default function ChatWidget() {
     }, [messages, isLoading, isStorageReady]);
 
     useEffect(() => {
+        if (!isLauncherReady) {
+            return;
+        }
+
         const isMobile = window
             .matchMedia("(max-width: 640px)")
             .matches;
 
+        let width = "128px";
+        let height = "128px";
+
+        if (isOpen) {
+            width = isMobile
+                ? "100vw"
+                : isExpanded
+                    ? "620px"
+                    : "430px";
+
+            height = isMobile ? "100dvh" : "640px";
+        } else if (isLauncherCollapsed) {
+            width = "64px";
+            height = "96px";
+        }
+
         window.parent.postMessage(
             {
                 type: "KAJABI_CHATBOT_SIZE",
-                width: isOpen
-                    ? isMobile
-                        ? "100vw"
-                        : isExpanded
-                            ? "620px"
-                            : "430px"
-                    : "128px",
-
-                height: isOpen
-                    ? isMobile
-                        ? "100dvh"
-                        : "640px"
-                    : "128px",
+                width,
+                height,
             },
             "*"
         );
-    }, [isOpen, isExpanded]);
+    }, [
+        isOpen,
+        isExpanded,
+        isLauncherCollapsed,
+        isLauncherReady,
+    ]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -207,6 +240,31 @@ export default function ChatWidget() {
         window.localStorage.removeItem(
             clientCourseConfig.storageKey
         );
+    }
+
+    function collapseLauncher() {
+        setIsOpen(false);
+        setIsLauncherCollapsed(true);
+
+        try {
+            window.localStorage.setItem(
+                LAUNCHER_COLLAPSED_STORAGE_KEY,
+                "true"
+            );
+        } catch {
+        }
+    }
+
+    function restoreLauncher() {
+        setIsLauncherCollapsed(false);
+
+        try {
+            window.localStorage.setItem(
+                LAUNCHER_COLLAPSED_STORAGE_KEY,
+                "false"
+            );
+        } catch {
+        }
     }
 
     function getSourceDisplay(
@@ -708,42 +766,72 @@ export default function ChatWidget() {
                 </div>
             )}
 
-            <button
-                onClick={() =>
-                    setIsOpen(
-                        (previous) => !previous
-                    )
-                }
-                aria-label={
-                    isOpen
-                        ? clientCourseConfig.text
-                            .closeChat
-                        : clientCourseConfig.text
-                            .openChat
-                }
-                className={`dsu-ai-button max-sm:pointer-events-auto max-sm:fixed max-sm:bottom-4 max-sm:right-4 ${
-                    isOpen
-                        ? "dsu-ai-button-open max-sm:hidden"
-                        : ""
-                }`}
-            >
-                <span className="dsu-ai-orbit dsu-ai-orbit-one" />
-                <span className="dsu-ai-orbit dsu-ai-orbit-two" />
-
-                <span className="dsu-ai-inner">
-                    {isOpen ? (
-                        <span className="dsu-ai-close">
+            {!isLauncherCollapsed && (
+                <div className="dsu-launcher-main max-sm:pointer-events-auto max-sm:fixed max-sm:bottom-4 max-sm:right-4">
+                    {!isOpen && (
+                        <button
+                            type="button"
+                            onClick={collapseLauncher}
+                            aria-label="Chatbot ausblenden"
+                            className="dsu-launcher-dismiss"
+                        >
                             ×
-                        </span>
-                    ) : (
-                        <img
-                            src="/dsu_chatbot_logo.webp"
-                            alt={`${clientCourseConfig.assistantName} Chatbot`}
-                            className="dsu-ai-image"
-                        />
+                        </button>
                     )}
-                </span>
-            </button>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setIsOpen(
+                                (previous) => !previous
+                            )
+                        }
+                        aria-label={
+                            isOpen
+                                ? clientCourseConfig.text
+                                    .closeChat
+                                : clientCourseConfig.text
+                                    .openChat
+                        }
+                        className={`dsu-ai-button ${
+                            isOpen
+                                ? "dsu-ai-button-open max-sm:hidden"
+                                : ""
+                        }`}
+                    >
+                        <span className="dsu-ai-orbit dsu-ai-orbit-one" />
+                        <span className="dsu-ai-orbit dsu-ai-orbit-two" />
+
+                        <span className="dsu-ai-inner">
+                            {isOpen ? (
+                                <span className="dsu-ai-close">
+                                    ×
+                                </span>
+                            ) : (
+                                <img
+                                    src="/dsu_chatbot_logo.webp"
+                                    alt={`${clientCourseConfig.assistantName} Chatbot`}
+                                    className="dsu-ai-image"
+                                />
+                            )}
+                        </span>
+                    </button>
+                </div>
+            )}
+
+            {isLauncherCollapsed && (
+                <button
+                    type="button"
+                    onClick={restoreLauncher}
+                    aria-label="Chatbot wieder einblenden"
+                    className="dsu-launcher-restore max-sm:pointer-events-auto"
+                >
+                    <ChevronLeft
+                        size={20}
+                        strokeWidth={2.4}
+                    />
+                </button>
+            )}
         </div>
     );
 }
