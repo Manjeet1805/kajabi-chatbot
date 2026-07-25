@@ -3,24 +3,21 @@
         return;
     }
 
-    window.__kajabiChatbotLoaded = true;
+    const pathname = window.location.pathname
+        .toLowerCase()
+        .replace(/\/+$/, "");
 
-    const pathname = window.location.pathname.toLowerCase();
+    const allowedPath = "/products/dsu";
 
-    const blockedPaths = [
-        "/login",
-        "/member-login",
-        "/signin",
-        "/sign-in"
-    ];
+    const isAllowedPage =
+        pathname === allowedPath ||
+        pathname.startsWith(`${allowedPath}/`);
 
-    const isBlockedPage = blockedPaths.some(function (path) {
-        return pathname === path || pathname.startsWith(path + "/");
-    });
-
-    if (isBlockedPage) {
+    if (!isAllowedPage) {
         return;
     }
+
+    window.__kajabiChatbotLoaded = true;
 
     const currentScript = document.currentScript;
 
@@ -64,17 +61,14 @@
 
             if (
                 !event.data ||
-                event.data.type !==
-                "KAJABI_CHATBOT_SIZE"
+                event.data.type !== "KAJABI_CHATBOT_SIZE"
             ) {
                 return;
             }
 
             if (
-                typeof event.data.width !==
-                "string" ||
-                typeof event.data.height !==
-                "string"
+                typeof event.data.width !== "string" ||
+                typeof event.data.height !== "string"
             ) {
                 return;
             }
