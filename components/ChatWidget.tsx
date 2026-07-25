@@ -818,8 +818,10 @@ export default function ChatWidget() {
                                     .openChat
                         }
                         className={`dsu-ai-button ${
-                            isOpen
-                                ? "dsu-ai-button-open max-sm:hidden"
+                            isOpen ? "dsu-ai-button-open" : ""
+                        } ${
+                            isOpen && isMobileHost
+                                ? "hidden"
                                 : ""
                         }`}
                     >
