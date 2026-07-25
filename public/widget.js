@@ -7,7 +7,7 @@
         .toLowerCase()
         .replace(/\/+$/, "");
 
-    const allowedPath = "/products/dsu";
+    const allowedPath = "/products";
 
     const isAllowedPage =
         pathname === allowedPath ||
