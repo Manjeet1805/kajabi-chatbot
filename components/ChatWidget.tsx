@@ -158,6 +158,8 @@ export default function ChatWidget() {
     const messagesEndRef =
         useRef<HTMLDivElement | null>(null);
 
+    const shouldAnimateIframeRef = useRef(false);
+
     useEffect(() => {
         setMessages(loadStoredMessages());
         setIsStorageReady(true);
@@ -213,9 +215,13 @@ export default function ChatWidget() {
                 type: "KAJABI_CHATBOT_SIZE",
                 width,
                 height,
+                animateIframe:
+                shouldAnimateIframeRef.current,
             },
             "*"
         );
+
+        shouldAnimateIframeRef.current = false;
     }, [
         isOpen,
         isExpanded,
@@ -243,6 +249,8 @@ export default function ChatWidget() {
     }
 
     function collapseLauncher() {
+        shouldAnimateIframeRef.current = true;
+
         setIsOpen(false);
         setIsLauncherCollapsed(true);
 
@@ -256,6 +264,8 @@ export default function ChatWidget() {
     }
 
     function restoreLauncher() {
+        shouldAnimateIframeRef.current = true;
+
         setIsLauncherCollapsed(false);
 
         try {

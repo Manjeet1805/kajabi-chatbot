@@ -46,9 +46,6 @@
     iframe.style.background = "transparent";
     iframe.style.overflow = "hidden";
 
-    iframe.style.transition =
-        "width 240ms ease, height 240ms ease, right 240ms ease, bottom 240ms ease";
-
     iframe.setAttribute("allowtransparency", "true");
     iframe.setAttribute("allow", "clipboard-write");
     iframe.setAttribute("loading", "eager");
@@ -77,19 +74,26 @@
             }
 
             const isMobileFullscreen =
-    event.data.width === "100vw" &&
-    event.data.height === "100dvh";
+                event.data.width === "100vw" &&
+                event.data.height === "100dvh";
 
-iframe.style.width = event.data.width;
-iframe.style.height = event.data.height;
+            const shouldAnimate =
+                event.data.animateIframe === true;
 
-iframe.style.right = isMobileFullscreen
-    ? "0"
-    : "20px";
+            iframe.style.transition = shouldAnimate
+                ? "width 240ms ease, height 240ms ease, right 240ms ease, bottom 240ms ease"
+                : "none";
 
-iframe.style.bottom = isMobileFullscreen
-    ? "0"
-    : "20px";
+            iframe.style.width = event.data.width;
+            iframe.style.height = event.data.height;
+
+            iframe.style.right = isMobileFullscreen
+                ? "0"
+                : "20px";
+
+            iframe.style.bottom = isMobileFullscreen
+                ? "0"
+                : "20px";
         }
     );
 })();
