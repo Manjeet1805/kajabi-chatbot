@@ -5,6 +5,23 @@
 
     window.__kajabiChatbotLoaded = true;
 
+    const pathname = window.location.pathname.toLowerCase();
+
+    const blockedPaths = [
+        "/login",
+        "/member-login",
+        "/signin",
+        "/sign-in"
+    ];
+
+    const isBlockedPage = blockedPaths.some(function (path) {
+        return pathname === path || pathname.startsWith(path + "/");
+    });
+
+    if (isBlockedPage) {
+        return;
+    }
+
     const currentScript = document.currentScript;
 
     if (!currentScript || !currentScript.src) {
@@ -62,11 +79,8 @@
                 return;
             }
 
-            iframe.style.width =
-                event.data.width;
-
-            iframe.style.height =
-                event.data.height;
+            iframe.style.width = event.data.width;
+            iframe.style.height = event.data.height;
         }
     );
 })();
