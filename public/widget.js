@@ -73,8 +73,20 @@
                 return;
             }
 
-            iframe.style.width = event.data.width;
-            iframe.style.height = event.data.height;
+            const isMobileFullscreen =
+    event.data.width === "100vw" &&
+    event.data.height === "100dvh";
+
+iframe.style.width = event.data.width;
+iframe.style.height = event.data.height;
+
+iframe.style.right = isMobileFullscreen
+    ? "0"
+    : "20px";
+
+iframe.style.bottom = isMobileFullscreen
+    ? "0"
+    : "20px";
         }
     );
 })();
