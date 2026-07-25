@@ -140,6 +140,8 @@ export default function ChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] =
         useState(false);
+    const [isMobileHost, setIsMobileHost] =
+        useState(false);
     const [isLauncherCollapsed, setIsLauncherCollapsed] =
         useState(false);
     const [isLauncherReady, setIsLauncherReady] =
@@ -163,6 +165,14 @@ export default function ChatWidget() {
     useEffect(() => {
         setMessages(loadStoredMessages());
         setIsStorageReady(true);
+
+        const searchParams = new URLSearchParams(
+            window.location.search
+        );
+
+        setIsMobileHost(
+            searchParams.get("hostMobile") === "true"
+        );
 
         try {
             const storedValue = window.localStorage.getItem(
@@ -190,21 +200,20 @@ export default function ChatWidget() {
             return;
         }
 
-        const isMobile = window
-            .matchMedia("(max-width: 640px)")
-            .matches;
-
         let width = "128px";
         let height = "128px";
 
         if (isOpen) {
-            width = isMobile
+            width = isMobileHost
                 ? "100vw"
                 : isExpanded
                     ? "620px"
                     : "430px";
 
-            height = isMobile ? "100dvh" : "640px";
+            height = isMobileHost
+                ? "100dvh"
+                : "640px";
+
         } else if (isLauncherCollapsed) {
             width = "64px";
             height = "96px";
@@ -227,6 +236,7 @@ export default function ChatWidget() {
         isExpanded,
         isLauncherCollapsed,
         isLauncherReady,
+        isMobileHost,
     ]);
 
     useEffect(() => {
@@ -554,7 +564,9 @@ export default function ChatWidget() {
                                             .text
                                             .expandChat
                                 }
-                                className="flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white max-sm:hidden"
+                                className={`h-8 w-8 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white ${
+                                    isMobileHost ? "hidden" : "flex"
+                                }`}
                             >
                                 {isExpanded ? (
                                     <Shrink
@@ -581,7 +593,9 @@ export default function ChatWidget() {
                                     clientCourseConfig
                                         .text.closeChat
                                 }
-                                className="hidden h-9 w-9 items-center justify-center rounded-full text-2xl font-light text-white/80 transition hover:bg-white/10 hover:text-white max-sm:flex"
+                                className={`h-9 w-9 items-center justify-center rounded-full text-2xl font-light text-white/80 transition hover:bg-white/10 hover:text-white ${
+                                    isMobileHost ? "flex" : "hidden"
+                                }`}
                             >
                                 ×
                             </button>

@@ -33,7 +33,14 @@
 
     const iframe = document.createElement("iframe");
 
-    iframe.src = `${chatbotOrigin}/embed`;
+    const isMobileHost = window.matchMedia(
+        "(max-width: 640px)"
+    ).matches;
+
+    iframe.src =
+        `${chatbotOrigin}/embed?hostMobile=` +
+        `${isMobileHost ? "true" : "false"}`;
+
     iframe.title = "DSU AI Chatbot";
 
     iframe.style.position = "fixed";
