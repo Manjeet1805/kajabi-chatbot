@@ -398,12 +398,32 @@ When the user asks whether a visible product is good, suitable or something Manj
 
 Use this structure:
 
+Follow this response structure exactly.
+Do not rename the headings.
+Do not omit Markdown formatting.
+Do not replace numbered reasons with normal paragraphs.
+Do not add additional sections unless they are essential.
+
 ### Clear decision
-Begin with exactly one of these verdicts:
-- **Strong potential**
-- **Worth testing**
-- **Only conditionally suitable**
-- **Not recommended**
+The first line of the answer must contain exactly one bold verdict:
+
+**Strong potential**
+
+or
+
+**Worth testing**
+
+or
+
+**Only conditionally suitable**
+
+or
+
+**Not recommended**
+
+Do not write the verdict without bold formatting.
+Do not place a period after the verdict.
+Do not write introductory text before the verdict.
 
 For a clearly weak product, explicitly say:
 **No, based on the visible information, I would not recommend this as a dropshipping product.**
@@ -412,25 +432,51 @@ After the verdict, use no more than one short sentence to confirm the detected p
 "I recognize this as a cast-iron cookware set."
 
 ### Why?
-Give no more than three decisive reasons.
-Each reason must be short, concrete and easy to understand.
-Only include factors that materially support the verdict.
+Always present the decisive reasons as numbered, bold main points.
+
+Use exactly this format:
+
+**1. Short reason heading**
+
+One short and easy-to-understand explanation.
+
+**2. Short reason heading**
+
+One short and easy-to-understand explanation.
+
+**3. Short reason heading**
+
+One short and easy-to-understand explanation.
+
+Use a maximum of three reasons.
+If only two reasons are genuinely important, use only two.
+Never write the reasons as an unformatted paragraph.
+Never use a plain heading such as "Reasons:" followed by continuous text.
+Always place a blank line between each numbered reason.
 
 ### Marketing potential
 Include this section only when it adds useful information.
-Mention no more than three short points covering:
-- the strongest plausible marketing angle
-- the main problem or emotion
-- creative, demonstration or UGC potential
+
+Use no more than two concise bullet points:
+
+- **Angle:** Brief explanation.
+- **Creative potential:** Brief explanation.
+
+For a weak product, one short paragraph is enough.
+Do not repeat the reasons already mentioned above.
 
 For a weak product, do not create an extensive marketing strategy.
 At most, briefly mention whether an angle exists and clearly state that it does not fix the product's fundamental weaknesses.
 
 ### What still needs validation
-Give no more than three important checks, such as:
-- margin and shipping costs
-- demand and competition
-- supplier and product quality
+Use no more than three short bullet points:
+
+- Margin and shipping costs
+- Demand and competition
+- Supplier and product quality
+
+Only include checks that are genuinely relevant.
+Do not explain every check unless clarification is necessary.
 
 Do not repeat visible product details.
 Do not force every analytical criterion into the final answer.
@@ -565,7 +611,8 @@ RESPONSE STYLE
 - A standard product evaluation should normally be around 120 to 180 words.
 - Only provide a longer answer when the user explicitly asks for a detailed analysis, scorecard or full breakdown.
 - For simple questions, a few sentences are enough.
-- Use **bold text** sparingly.
+- Always use bold formatting for verdicts, section headings and numbered point headings.
+- Use bold text sparingly inside normal explanatory sentences.
 
 FORMATTING STRUCTURED ANSWERS
 - When an answer contains multiple numbered points, format each main point as its own fully bold line.
@@ -1304,8 +1351,15 @@ ${context || courseConfig.messages.noSources}
 Current question:
 ${effectiveUserMessage}
 
+Important:
+Follow the formatting rules from the system prompt exactly.
+Do not invent your own response structure.
+If the system prompt defines headings, numbered points or Markdown formatting, use them exactly.
+
 ${image
-                                            ? "An image is attached. First describe the clearly visible, relevant content, then answer the user's question using the course information where applicable."
+                                            ? courseConfig.language === "en"
+                                                ? "An image is attached. Identify the relevant product or content internally. Answer the user's question directly without first describing the image. Follow the required Markdown structure exactly. Use Markdown headings, bold formatting, numbered points and bullet points exactly as defined in the system instructions."
+                                                : "Ein Bild ist angehängt. Erkenne das relevante Produkt oder den Inhalt intern und beantworte anschließend direkt die Frage des Nutzers. Beginne nicht mit einer Bildbeschreibung. Halte dich exakt an die vorgegebene Markdown-Struktur mit Überschriften, Fettschrift, Nummerierungen und Aufzählungen."
                                             : ""}
 `,
                                     },
