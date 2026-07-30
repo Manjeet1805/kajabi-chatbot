@@ -1,17 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+    type ChangeEvent,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import {
     ArrowUp,
     BookOpen,
     ChevronLeft,
     Expand,
+    ImagePlus,
     RotateCcw,
     Shrink,
+    X,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { clientCourseConfig } from "@/lib/client-course-config";
+import { heicTo } from "heic-to";
 
 type Source = {
     id: string;
@@ -34,6 +42,13 @@ type Message = {
     role: "user" | "assistant";
     content: string;
     sources?: Source[];
+    imageUrl?: string;
+};
+
+type SelectedImage = {
+    dataUrl: string;
+    mimeType: "image/jpeg" | "image/png" | "image/webp";
+    name: string;
 };
 
 type SseEvent = {
@@ -46,6 +61,10 @@ type SseEvent = {
 };
 
 const MAX_STORED_MESSAGES = 30;
+const MAX_IMAGE_FILE_SIZE = 8 * 1024 * 1024;
+const MAX_IMAGE_DATA_URL_LENGTH = 5_000_000;
+const MAX_IMAGE_DIMENSION = 1600;
+
 const LAUNCHER_COLLAPSED_STORAGE_KEY =
     `${clientCourseConfig.storageKey}-launcher-collapsed`;
 
@@ -92,12 +111,196 @@ function saveStoredMessages(messages: Message[]) {
             (message) =>
                 message.content.trim().length > 0
         )
+        .map(({ imageUrl: _imageUrl, ...message }) => message)
         .slice(-MAX_STORED_MESSAGES);
 
     window.localStorage.setItem(
         clientCourseConfig.storageKey,
         JSON.stringify(cleanMessages)
     );
+}
+
+
+function readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            if (typeof reader.result === "string") {
+                resolve(reader.result);
+                return;
+            }
+
+            reject(new Error("IMAGE_READ_FAILED"));
+        };
+
+        reader.onerror = () => {
+            reject(new Error("IMAGE_READ_FAILED"));
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadImage(dataUrl: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+
+        image.onload = () => resolve(image);
+        image.onerror = () =>
+            reject(new Error("IMAGE_READ_FAILED"));
+
+        image.src = dataUrl;
+    });
+}
+
+function getFileExtension(fileName: string): string {
+    const parts = fileName.toLowerCase().split(".");
+    return parts.length > 1 ? parts.pop() ?? "" : "";
+}
+
+function isHeicFile(file: File): boolean {
+    const extension = getFileExtension(file.name);
+
+    return (
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        extension === "heic" ||
+        extension === "heif"
+    );
+}
+
+async function convertHeicToJpeg(file: File): Promise<File> {
+    try {
+        const convertedBlob = await heicTo({
+            blob: file,
+            type: "image/jpeg",
+            quality: 0.92,
+        });
+
+        const originalNameWithoutExtension =
+            file.name.replace(/\.(heic|heif)$/i, "");
+
+        return new File(
+            [convertedBlob],
+            `${originalNameWithoutExtension}.jpg`,
+            {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+            }
+        );
+    } catch (error) {
+        console.error("HEIC conversion failed:", error);
+        throw new Error("IMAGE_PROCESSING_FAILED");
+    }
+}
+
+async function prepareImage(file: File): Promise<SelectedImage> {
+    const allowedMimeTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+        "image/heif",
+    ];
+
+    const allowedExtensions = [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp",
+        "heic",
+        "heif",
+    ];
+
+    const extension = getFileExtension(file.name);
+
+    const isAllowed =
+        allowedMimeTypes.includes(file.type) ||
+        allowedExtensions.includes(extension);
+
+    if (!isAllowed) {
+        throw new Error("IMAGE_TYPE_NOT_ALLOWED");
+    }
+
+    if (file.size > MAX_IMAGE_FILE_SIZE) {
+        throw new Error("IMAGE_TOO_LARGE");
+    }
+
+    let processableFile = file;
+
+    if (isHeicFile(file)) {
+        try {
+            processableFile = await convertHeicToJpeg(file);
+        } catch (error) {
+            console.error("HEIC conversion failed:", error);
+            throw new Error("IMAGE_PROCESSING_FAILED");
+        }
+    }
+
+    const originalDataUrl =
+        await readFileAsDataUrl(processableFile);
+
+    const image = await loadImage(originalDataUrl);
+
+    const largestDimension = Math.max(
+        image.naturalWidth,
+        image.naturalHeight
+    );
+
+    if (
+        !Number.isFinite(largestDimension) ||
+        largestDimension <= 0
+    ) {
+        throw new Error("IMAGE_PROCESSING_FAILED");
+    }
+
+    const scale = Math.min(
+        1,
+        MAX_IMAGE_DIMENSION / largestDimension
+    );
+
+    const width = Math.max(
+        1,
+        Math.round(image.naturalWidth * scale)
+    );
+
+    const height = Math.max(
+        1,
+        Math.round(image.naturalHeight * scale)
+    );
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+        throw new Error("IMAGE_PROCESSING_FAILED");
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+
+    const dataUrl = canvas.toDataURL(
+        "image/webp",
+        0.75
+    );
+
+    if (
+        !dataUrl.startsWith("data:image/webp") ||
+        dataUrl.length > MAX_IMAGE_DATA_URL_LENGTH
+    ) {
+        throw new Error(
+            "IMAGE_TOO_LARGE_AFTER_PROCESSING"
+        );
+    }
+
+    return {
+        dataUrl,
+        mimeType: "image/webp",
+        name: file.name,
+    };
 }
 
 function parseSseChunk(chunk: string): Array<SseEvent | null> {
@@ -151,6 +354,12 @@ export default function ChatWidget() {
         useState<Message[]>(INITIAL_MESSAGES);
 
     const [input, setInput] = useState("");
+    const [selectedImage, setSelectedImage] =
+        useState<SelectedImage | null>(null);
+    const [imageError, setImageError] =
+        useState<string | null>(null);
+    const [isPreparingImage, setIsPreparingImage] =
+        useState(false);
     const [isLoading, setIsLoading] =
         useState(false);
 
@@ -159,6 +368,8 @@ export default function ChatWidget() {
 
     const messagesEndRef =
         useRef<HTMLDivElement | null>(null);
+    const fileInputRef =
+        useRef<HTMLInputElement | null>(null);
 
     const shouldAnimateIframeRef = useRef(false);
 
@@ -252,6 +463,8 @@ export default function ChatWidget() {
 
     function resetConversation() {
         setMessages(INITIAL_MESSAGES);
+        setSelectedImage(null);
+        setImageError(null);
 
         window.localStorage.removeItem(
             clientCourseConfig.storageKey
@@ -322,12 +535,62 @@ export default function ChatWidget() {
         };
     }
 
-    async function sendMessage() {
-        const text = input.trim();
+    async function handleImageSelection(
+        event: ChangeEvent<HTMLInputElement>
+    ) {
+        const file = event.target.files?.[0];
 
-        if (!text || isLoading) {
+        event.target.value = "";
+
+        if (!file) {
             return;
         }
+
+        setImageError(null);
+        setIsPreparingImage(true);
+
+        try {
+            const preparedImage = await prepareImage(file);
+            setSelectedImage(preparedImage);
+        } catch (error) {
+            const code =
+                error instanceof Error ? error.message : "";
+
+            if (code === "IMAGE_TYPE_NOT_ALLOWED") {
+                setImageError(
+                    clientCourseConfig.text.imageTypeError
+                );
+            } else if (
+                code === "IMAGE_TOO_LARGE" ||
+                code === "IMAGE_TOO_LARGE_AFTER_PROCESSING"
+            ) {
+                setImageError(
+                    clientCourseConfig.text.imageSizeError
+                );
+            } else {
+                setImageError(
+                    clientCourseConfig.text.imageProcessingError
+                );
+            }
+        } finally {
+            setIsPreparingImage(false);
+        }
+    }
+
+    async function sendMessage() {
+        const text = input.trim();
+        const imageToSend = selectedImage;
+
+        if (
+            (!text && !imageToSend) ||
+            isLoading ||
+            isPreparingImage
+        ) {
+            return;
+        }
+
+        const displayText =
+            text || clientCourseConfig.text.defaultImageMessage;
 
         const assistantMessageIndex =
             messages.length + 1;
@@ -336,7 +599,8 @@ export default function ChatWidget() {
             ...previousMessages,
             {
                 role: "user",
-                content: text,
+                content: displayText,
+                imageUrl: imageToSend?.dataUrl,
             },
             {
                 role: "assistant",
@@ -346,6 +610,8 @@ export default function ChatWidget() {
         ]);
 
         setInput("");
+        setSelectedImage(null);
+        setImageError(null);
         setIsLoading(true);
 
         try {
@@ -359,6 +625,12 @@ export default function ChatWidget() {
                 body: JSON.stringify({
                     message: text,
                     history: messages.slice(-8),
+                    image: imageToSend
+                        ? {
+                            dataUrl: imageToSend.dataUrl,
+                            mimeType: imageToSend.mimeType,
+                        }
+                        : undefined,
                 }),
             });
 
@@ -633,6 +905,18 @@ export default function ChatWidget() {
                                                 : "mr-auto bg-white text-black shadow-sm"
                                         }`}
                                     >
+                                        {message.imageUrl && (
+                                            <img
+                                                src={message.imageUrl}
+                                                alt={
+                                                    clientCourseConfig
+                                                        .text
+                                                        .attachedImage
+                                                }
+                                                className="mb-3 max-h-48 w-full rounded-xl object-contain"
+                                            />
+                                        )}
+
                                         {message.content ? (
                                             <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-ol:my-2 prose-li:my-0">
                                                 <ReactMarkdown
@@ -750,7 +1034,83 @@ export default function ChatWidget() {
                     </div>
 
                     <div className="border-t bg-white p-3">
+                        {selectedImage && (
+                            <div className="mb-2 flex items-center gap-3 rounded-2xl border border-black/10 bg-neutral-50 p-2">
+                                <img
+                                    src={selectedImage.dataUrl}
+                                    alt={
+                                        clientCourseConfig.text
+                                            .imagePreview
+                                    }
+                                    className="h-14 w-14 rounded-xl object-cover"
+                                />
+
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-xs font-medium text-neutral-800">
+                                        {selectedImage.name}
+                                    </p>
+                                    <p className="text-[11px] text-neutral-500">
+                                        {
+                                            clientCourseConfig.text
+                                                .imageReady
+                                        }
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedImage(null);
+                                        setImageError(null);
+                                    }}
+                                    aria-label={
+                                        clientCourseConfig.text
+                                            .removeImage
+                                    }
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-500 transition hover:bg-black/5 hover:text-black"
+                                >
+                                    <X size={16} strokeWidth={2.2} />
+                                </button>
+                            </div>
+                        )}
+
+                        {imageError && (
+                            <p className="mb-2 px-1 text-xs text-red-600">
+                                {imageError}
+                            </p>
+                        )}
+
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                            onChange={(event) =>
+                                void handleImageSelection(event)
+                            }
+                            className="hidden"
+                        />
+
                         <div className="flex items-center gap-2 rounded-3xl border border-black/10 bg-neutral-50 px-3 py-2 shadow-sm">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    fileInputRef.current?.click()
+                                }
+                                disabled={
+                                    isLoading || isPreparingImage
+                                }
+                                aria-label={
+                                    clientCourseConfig.text
+                                        .attachImage
+                                }
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 transition hover:bg-black/5 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <ImagePlus
+                                    size={19}
+                                    strokeWidth={2.2}
+                                />
+                            </button>
+
                             <input
                                 value={input}
                                 onChange={(event) =>
@@ -769,10 +1129,13 @@ export default function ChatWidget() {
                                     }
                                 }}
                                 placeholder={
-                                    clientCourseConfig.text
-                                        .inputPlaceholder
+                                    isPreparingImage
+                                        ? clientCourseConfig.text
+                                            .processingImage
+                                        : clientCourseConfig.text
+                                            .inputPlaceholder
                                 }
-                                className="min-w-0 flex-1 bg-transparent px-2 py-2 text-[16px] text-black placeholder:text-neutral-400 outline-none sm:text-sm"
+                                className="min-w-0 flex-1 bg-transparent px-1 py-2 text-[16px] text-black placeholder:text-neutral-400 outline-none sm:text-sm"
                             />
 
                             <button
@@ -781,8 +1144,11 @@ export default function ChatWidget() {
                                 }
                                 disabled={
                                     isLoading ||
-                                    input.trim()
-                                        .length === 0
+                                    isPreparingImage ||
+                                    (
+                                        input.trim().length === 0 &&
+                                        !selectedImage
+                                    )
                                 }
                                 aria-label={
                                     clientCourseConfig

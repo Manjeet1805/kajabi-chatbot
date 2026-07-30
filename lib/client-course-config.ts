@@ -41,6 +41,8 @@ export const clientCourseConfig = {
 
 I’m **${assistantName}** and I can help you with questions about Shopify, product research, advertising, business setup, general tax topics and course content.
 
+You can also attach a screenshot or product image for analysis.
+
 Just ask me anything.`,
 
                 sources: "Sources",
@@ -53,6 +55,21 @@ Just ask me anything.`,
                 openChat: "Open chat",
                 closeChat: "Close chat",
                 sendMessage: "Send message",
+
+                attachImage: "Attach image",
+                removeImage: "Remove image",
+                attachedImage: "Attached image",
+                imagePreview: "Image preview",
+                imageReady: "Ready to send",
+                processingImage: "Preparing image...",
+                defaultImageMessage:
+                    "Please analyze this image.",
+                imageTypeError:
+                    "Please upload a JPG, PNG, WebP, HEIC or HEIF image.",
+                imageSizeError:
+                    "The image is too large. Please use a smaller image.",
+                imageProcessingError:
+                    "The image could not be processed. Please try another image.",
 
                 genericError:
                     "Sorry, something went wrong. Please try again shortly.",
@@ -68,6 +85,8 @@ Just ask me anything.`,
 
 Ich bin **${assistantName}** und helfe dir bei Fragen rund um Shopify, Produktrecherche, Werbung, Gewerbe, Steuern allgemein und Kursinhalte.
 
+Du kannst mir auch einen Screenshot oder ein Produktbild zur Analyse senden.
+
 Frag mich einfach los.`,
 
                 sources: "Verwendete Quellen",
@@ -80,6 +99,21 @@ Frag mich einfach los.`,
                 openChat: "Chat öffnen",
                 closeChat: "Chat schließen",
                 sendMessage: "Nachricht senden",
+
+                attachImage: "Bild anhängen",
+                removeImage: "Bild entfernen",
+                attachedImage: "Angehängtes Bild",
+                imagePreview: "Bildvorschau",
+                imageReady: "Bereit zum Senden",
+                processingImage: "Bild wird vorbereitet...",
+                defaultImageMessage:
+                    "Bitte analysiere dieses Bild.",
+                imageTypeError:
+                    "Bitte lade ein JPG-, PNG-, WebP-, HEIC- oder HEIF-Bild hoch.",
+                imageSizeError:
+                    "Das Bild ist zu groß. Bitte verwende ein kleineres Bild.",
+                imageProcessingError:
+                    "Das Bild konnte nicht verarbeitet werden. Bitte versuche ein anderes Bild.",
 
                 genericError:
                     "Sorry, da ist gerade etwas schiefgelaufen. Versuch es bitte gleich noch einmal.",
