@@ -918,15 +918,64 @@ export default function ChatWidget() {
                                         )}
 
                                         {message.content ? (
-                                            <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-ol:my-2 prose-li:my-0">
+                                            <div className="max-w-none">
                                                 <ReactMarkdown
-                                                    remarkPlugins={[
-                                                        remarkGfm,
-                                                    ]}
+                                                    remarkPlugins={[remarkGfm]}
+                                                    components={{
+                                                        h1: ({ children }) => (
+                                                            <h1 className="mb-4 mt-6 text-lg font-bold leading-tight first:mt-0">
+                                                                {children}
+                                                            </h1>
+                                                        ),
+
+                                                        h2: ({ children }) => (
+                                                            <h2 className="mb-3 mt-6 text-base font-bold leading-tight first:mt-0">
+                                                                {children}
+                                                            </h2>
+                                                        ),
+
+                                                        h3: ({ children }) => (
+                                                            <h3 className="mb-3 mt-5 text-sm font-bold leading-tight first:mt-0">
+                                                                {children}
+                                                            </h3>
+                                                        ),
+
+                                                        p: ({ children }) => (
+                                                            <p className="mb-4 leading-relaxed last:mb-0">
+                                                                {children}
+                                                            </p>
+                                                        ),
+
+                                                        ul: ({ children }) => (
+                                                            <ul className="mb-4 mt-2 list-disc space-y-2 pl-5 last:mb-0">
+                                                                {children}
+                                                            </ul>
+                                                        ),
+
+                                                        ol: ({ children }) => (
+                                                            <ol className="mb-4 mt-2 list-decimal space-y-3 pl-5 last:mb-0">
+                                                                {children}
+                                                            </ol>
+                                                        ),
+
+                                                        li: ({ children }) => (
+                                                            <li className="pl-1 leading-relaxed">
+                                                                {children}
+                                                            </li>
+                                                        ),
+
+                                                        strong: ({ children }) => (
+                                                            <strong className="font-bold">
+                                                                {children}
+                                                            </strong>
+                                                        ),
+
+                                                        hr: () => (
+                                                            <hr className="my-5 border-black/10" />
+                                                        ),
+                                                    }}
                                                 >
-                                                    {
-                                                        message.content
-                                                    }
+                                                    {message.content}
                                                 </ReactMarkdown>
                                             </div>
                                         ) : (

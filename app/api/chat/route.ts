@@ -432,7 +432,9 @@ After the verdict, use no more than one short sentence to confirm the detected p
 "I recognize this as a cast-iron cookware set."
 
 ### Why?
+
 Always present the decisive reasons as numbered, bold main points.
+Insert one completely empty line before the first numbered reason and between all numbered reasons.
 
 Use exactly this format:
 
@@ -455,7 +457,9 @@ Never use a plain heading such as "Reasons:" followed by continuous text.
 Always place a blank line between each numbered reason.
 
 ### Marketing potential
+
 Include this section only when it adds useful information.
+Always place one completely empty line between this heading and its content.
 
 Use no more than two concise bullet points:
 
@@ -469,7 +473,9 @@ For a weak product, do not create an extensive marketing strategy.
 At most, briefly mention whether an angle exists and clearly state that it does not fix the product's fundamental weaknesses.
 
 ### What still needs validation
-Use no more than three short bullet points:
+
+Use no more than three short bullet points.
+Always place one completely empty line between this heading and the bullet list:
 
 - Margin and shipping costs
 - Demand and competition
@@ -614,42 +620,61 @@ RESPONSE STYLE
 - Always use bold formatting for verdicts, section headings and numbered point headings.
 - Use bold text sparingly inside normal explanatory sentences.
 
-FORMATTING STRUCTURED ANSWERS
-- When an answer contains multiple numbered points, format each main point as its own fully bold line.
-- Use this exact structure:
+FORMATTING AND VISUAL SPACING
+- Use valid Markdown in every structured answer.
+- Make the answer visually easy to scan on desktop and mobile.
+- Use exactly one completely empty line between every major section.
+- An empty line means two newline characters between blocks.
+- Never place two headings, numbered points, paragraphs or lists directly against each other without an empty line.
+- Do not rely only on bold text for separation. Use real paragraph spacing as well.
+- Start each new idea in a new paragraph.
+- Keep paragraphs short, normally one or two sentences.
+- Avoid dense text blocks.
+
+For numbered main points, use exactly this pattern:
 
 **1. Short heading**
 
-Brief explanation in one to three sentences.
+Short explanation.
 
 **2. Short heading**
 
-Brief explanation in one to three sentences.
+Short explanation.
 
 **3. Short heading**
 
-Brief explanation in one to three sentences.
+Short explanation.
 
-- Always place a blank line between numbered main points.
-- Never place multiple numbered main points on the same line.
-- Keep each numbered heading short, specific and fully bold.
-- Keep the explanation below the heading in normal text.
-- Use no more than two or three short sentences or a few concise bullets per main point.
-- Use numbered main points only for actual steps, criteria, priorities or separate metrics.
-- Use normal bullet points for unordered information.
-- Do not mix numbered points and bullet points at the same hierarchy level without a clear reason.
+Rules for numbered points:
+- Each numbered heading must be on its own line.
+- The entire numbered heading must be bold.
+- Insert exactly one empty line after the numbered heading.
+- Insert exactly one empty line after its explanation before the next numbered point.
+- Never combine multiple numbered points in one paragraph.
+- Never write numbered points as plain continuous text.
+- Use numbered points only for steps, priorities, criteria or separate metrics.
+- Use ordinary bullet points for unordered information.
 - Use no more than two hierarchy levels.
-- Do not create deeply nested lists.
 
-MARKDOWN RULES
-- Use valid Markdown.
-- Separate headings, paragraphs and lists with blank lines.
-- Place a blank line before and after every main heading.
-- Use bold headings instead of large blocks of text.
-- Avoid walls of text.
-- Keep paragraphs short.
-- A paragraph should normally contain no more than three sentences.
-- Do not use tables unless the user explicitly asks for one.
+For section headings, use this pattern:
+
+### Section heading
+
+Content begins only after one completely empty line.
+
+- Insert exactly one empty line before every section heading, except at the very beginning of the answer.
+- Insert exactly one empty line after every section heading.
+- Insert exactly one empty line between a paragraph and a following bullet list.
+- Insert exactly one empty line after a bullet list before the next paragraph or heading.
+- Do not place a heading immediately after another heading.
+- Do not create paragraphs longer than three sentences.
+- Do not use tables unless the user explicitly requests one.
+
+Before sending the answer, internally verify:
+- Every major section is separated by an empty line.
+- Every numbered point is visually separated.
+- No large wall of text remains.
+- The Markdown would be easy to scan on a smartphone.
 `;
     }
 
@@ -984,8 +1009,8 @@ Beginne mit genau einer Kategorie:
 Danach höchstens ein kurzer Satz zur Produkterkennung, zum Beispiel:
 "Ich erkenne hier ein Gusseisen-Pfannen-Set."
 
-### Warum?
 ### Entscheidende Gründe
+
 Nenne höchstens drei Gründe in diesem Format:
 
 **1. Kurze Überschrift**
@@ -1001,7 +1026,9 @@ Kurze, leicht verständliche Begründung.
 Kurze, leicht verständliche Begründung.
 
 ### Marketingpotenzial
-Nur wenn es für die Entscheidung relevant ist:
+
+Nur wenn es für die Entscheidung relevant ist.
+Setze zwischen dieser Überschrift und dem folgenden Inhalt genau eine freie Zeile:
 - stärkster Marketingwinkel
 - wichtigste Emotion oder Problemstärke
 - Creative- oder UGC-Potenzial
@@ -1009,7 +1036,9 @@ Nur wenn es für die Entscheidung relevant ist:
 Beschränke diesen Abschnitt auf höchstens drei kurze Stichpunkte.
 
 ### Was noch geprüft werden muss
-Nenne höchstens drei wirklich wichtige offene Prüfungen, zum Beispiel:
+
+Nenne höchstens drei wirklich wichtige offene Prüfungen.
+Setze zwischen dieser Überschrift und der folgenden Liste genau eine freie Zeile, zum Beispiel:
 - Marge und Versandkosten
 - Nachfrage und Konkurrenz
 - Lieferantenqualität
@@ -1152,42 +1181,61 @@ ANTWORTSTIL
 - Für einfache Fragen genügen wenige Sätze.
 - Nutze **fette Schrift** sparsam.
 
-FORMATIERUNG VON STRUKTURIERTEN ANTWORTEN
-- Wenn die Antwort mehrere nummerierte Punkte enthält, formatiere jeden Hauptpunkt als eigene fett markierte Zeile.
-- Verwende dieses Format:
+FORMATIERUNG UND VISUELLE ABSTÄNDE
+- Verwende bei jeder strukturierten Antwort gültiges Markdown.
+- Gestalte die Antwort auf Desktop und Smartphone leicht erfassbar.
+- Setze zwischen allen größeren Abschnitten genau eine vollständig freie Zeile.
+- Eine freie Zeile bedeutet zwei aufeinanderfolgende Zeilenumbrüche zwischen den Textblöcken.
+- Setze niemals zwei Überschriften, nummerierte Punkte, Absätze oder Listen ohne freie Zeile direkt aneinander.
+- Nutze zur Abgrenzung nicht nur Fettschrift, sondern zusätzlich echte Absatzabstände.
+- Beginne bei einem neuen Gedanken einen neuen Absatz.
+- Halte Absätze kurz, normalerweise ein bis zwei Sätze.
+- Vermeide dichte Textblöcke.
 
-**1. Überschrift**
+Verwende für nummerierte Hauptpunkte genau dieses Muster:
 
-Kurze Erklärung in ein bis drei Sätzen.
+**1. Kurze Überschrift**
 
-**2. Überschrift**
+Kurze Erklärung.
 
-Kurze Erklärung in ein bis drei Sätzen.
+**2. Kurze Überschrift**
 
-**3. Überschrift**
+Kurze Erklärung.
 
-Kurze Erklärung in ein bis drei Sätzen.
+**3. Kurze Überschrift**
 
-- Setze zwischen nummerierten Hauptpunkten immer eine Leerzeile.
-- Schreibe niemals mehrere nummerierte Hauptpunkte direkt hintereinander in einer einzigen Zeile.
-- Der Titel eines nummerierten Punktes muss kurz, konkret und vollständig fett markiert sein.
-- Die Erklärung unter dem Titel darf normal formatiert sein.
-- Verwende pro Hauptpunkt höchstens zwei bis drei kurze Sätze oder wenige knappe Stichpunkte.
-- Nutze nummerierte Hauptpunkte nur für echte Schritte, Kriterien oder Prioritäten.
-- Für einfache Aufzählungen ohne feste Reihenfolge verwende normale Stichpunkte.
-- Vermische innerhalb derselben Ebene nicht Nummerierungen und Bulletpoints ohne klaren Grund.
-- Verwende keine übermäßig tiefen Untergliederungen.
-- Nutze maximal zwei Gliederungsebenen.
+Kurze Erklärung.
 
-MARKDOWN-REGELN
-- Verwende gültiges Markdown.
-- Überschriften und Listen müssen durch Leerzeilen sauber voneinander getrennt sein.
-- Setze vor und nach jeder Hauptüberschrift eine Leerzeile.
-- Verwende fett markierte Überschriften statt langer Fließtextblöcke.
-- Vermeide große Textwände.
-- Halte Absätze kurz.
-- Ein Absatz soll normalerweise höchstens drei Sätze enthalten.
+Regeln für nummerierte Punkte:
+- Jede nummerierte Überschrift steht in einer eigenen Zeile.
+- Die vollständige nummerierte Überschrift wird fett formatiert.
+- Setze nach der nummerierten Überschrift genau eine freie Zeile.
+- Setze nach der Erklärung genau eine freie Zeile, bevor der nächste nummerierte Punkt beginnt.
+- Fasse niemals mehrere nummerierte Punkte in einem Absatz zusammen.
+- Schreibe nummerierte Punkte niemals als unformatierten Fließtext.
+- Nutze nummerierte Punkte nur für Schritte, Prioritäten, Kriterien oder einzelne Kennzahlen.
+- Nutze normale Stichpunkte für ungeordnete Informationen.
+- Verwende maximal zwei Gliederungsebenen.
+
+Verwende für Abschnittsüberschriften dieses Muster:
+
+### Abschnittsüberschrift
+
+Der Inhalt beginnt erst nach einer vollständig freien Zeile.
+
+- Setze vor jeder Abschnittsüberschrift genau eine freie Zeile, außer ganz am Anfang der Antwort.
+- Setze nach jeder Abschnittsüberschrift genau eine freie Zeile.
+- Setze zwischen einem Absatz und einer folgenden Stichpunktliste genau eine freie Zeile.
+- Setze nach einer Stichpunktliste genau eine freie Zeile, bevor ein neuer Absatz oder Abschnitt beginnt.
+- Setze niemals zwei Überschriften direkt untereinander.
+- Schreibe keine Absätze mit mehr als drei Sätzen.
 - Verwende keine Tabellen, außer der Nutzer verlangt ausdrücklich eine Tabelle.
+
+Prüfe vor dem Absenden intern:
+- Sind alle Hauptabschnitte durch eine freie Zeile getrennt?
+- Sind alle nummerierten Punkte optisch voneinander getrennt?
+- Gibt es keine große Textwand?
+- Ist die Antwort auch auf einem Smartphone schnell erfassbar?
 `;
 }
 
@@ -1352,14 +1400,16 @@ Current question:
 ${effectiveUserMessage}
 
 Important:
-Follow the formatting rules from the system prompt exactly.
+Follow the formatting and response-structure rules from the system prompt exactly.
+Use real Markdown paragraph spacing.
+Insert one completely empty line between headings, numbered points, paragraphs and lists as required.
+Do not compress separate sections into continuous text.
 Do not invent your own response structure.
-If the system prompt defines headings, numbered points or Markdown formatting, use them exactly.
 
 ${image
                                             ? courseConfig.language === "en"
-                                                ? "An image is attached. Identify the relevant product or content internally. Answer the user's question directly without first describing the image. Follow the required Markdown structure exactly. Use Markdown headings, bold formatting, numbered points and bullet points exactly as defined in the system instructions."
-                                                : "Ein Bild ist angehängt. Erkenne das relevante Produkt oder den Inhalt intern und beantworte anschließend direkt die Frage des Nutzers. Beginne nicht mit einer Bildbeschreibung. Halte dich exakt an die vorgegebene Markdown-Struktur mit Überschriften, Fettschrift, Nummerierungen und Aufzählungen."
+                                                ? "An image is attached. Identify the relevant product or content internally and answer the user's question directly without first describing the image. Follow the required Markdown structure exactly. Use real empty lines between headings, numbered points, paragraphs and lists. Do not compress the answer into continuous text."
+                                                : "Ein Bild ist angehängt. Erkenne das relevante Produkt oder den Inhalt intern und beantworte direkt die Frage des Nutzers, ohne zuerst das Bild ausführlich zu beschreiben. Halte dich exakt an die vorgegebene Markdown-Struktur. Setze echte freie Zeilen zwischen Überschriften, nummerierten Punkten, Absätzen und Listen. Fasse die Antwort nicht zu einem durchgehenden Textblock zusammen."
                                             : ""}
 `,
                                     },
