@@ -26372,294 +26372,740 @@
     ]
   },
   {
-    "id": "ads-management-profit-margin-001",
+    "id": "ad-set-management-001",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Use profit margin as the main ad set decision metric",
-    "content": "The main metric for deciding whether to scale, hold, adjust or turn off an ad set is profit margin, not ROAS. Profit margin is calculated as (Revenue - COGS - Shipping - Fees - Ad Spend) divided by Revenue. Use a 3-day rolling average when spend is high and a 7-day rolling average when spend is low. Never make decisions based on a single day.",
+    "title": "Profit margin is the main metric for ad set decisions",
+    "content": "The main metric for deciding whether to scale, hold, adjust, or turn off an ad set is profit margin, not ROAS. Profit margin is calculated as: (Revenue - COGS - Shipping - Fees - Ad Spend) divided by Revenue. Use a 3-day rolling average when spending is high and a 7-day rolling average when spending is low. Never make decisions based on a single day.",
     "tags": [
       "profit margin",
       "ROAS",
       "ad set management",
-      "scale ads",
-      "meta ads",
-      "3 day average",
-      "7 day average"
+      "3-day rolling average",
+      "7-day rolling average",
+      "revenue",
+      "COGS",
+      "shipping",
+      "fees",
+      "ad spend"
     ],
     "questions": [
-      "What metric should I use to decide whether to scale an ad set?",
-      "Should I make Meta Ads decisions based on ROAS?",
-      "Should I judge an ad set based on one day of data?",
-      "How many days of data should I use before making a decision?"
+      "What is the most important metric for managing an ad set?",
+      "Should I use ROAS or profit margin to make decisions?",
+      "How do I calculate profit margin?",
+      "Should I make a decision based on one day of Meta Ads data?",
+      "Should I use a 3-day or 7-day average?"
     ]
   },
   {
-    "id": "ads-management-margin-rules-002",
+    "id": "ad-set-management-002",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Scale, hold or cut an ad set based on profit margin",
-    "content": "Use these profit margin rules for ad set decisions: 20% margin or higher: scale the budget by 20-30%, then wait 3 days and check again. 15-20% margin: hold the budget and only scale if the result remains there for at least 5 days. 10-15% margin: keep the budget unchanged and add new creatives because this is treated as a creative problem, not a budget problem. 0-10% margin: reduce budget by 30%, wait 3 days, then review again. Below 0% margin: reduce budget by 50%, or turn the ad set off if it has been negative for 3 consecutive days.",
+    "title": "Scale when profit margin is 20 percent or higher",
+    "content": "If profit margin is 20% or higher, scale the ad set. Increase the budget by 20-30%. After increasing the budget, wait 3 days and then check performance again.",
     "tags": [
-      "20 percent margin",
-      "15 percent margin",
-      "10 percent margin",
-      "negative margin",
-      "scale budget",
+      "20% margin",
+      "profit margin",
+      "scale",
+      "increase budget",
+      "20-30%",
+      "scaling"
+    ],
+    "questions": [
+      "My profit margin is 20%, what should I do?",
+      "My margin is above 20%, should I scale?",
+      "How much should I increase the budget when scaling?",
+      "How long should I wait after scaling?"
+    ]
+  },
+  {
+    "id": "ad-set-management-003",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Hold when profit margin is between 15 and 20 percent",
+    "content": "If profit margin is between 15% and 20%, hold the ad set. Leave the budget unchanged. Only scale if the margin stays in this range for at least 5 days.",
+    "tags": [
+      "15% margin",
+      "20% margin",
+      "hold",
+      "profit margin",
+      "budget",
+      "5 days"
+    ],
+    "questions": [
+      "My profit margin is 17%, should I scale?",
+      "What should I do with a 15-20% margin?",
+      "How long should I wait before scaling a 15-20% margin ad set?"
+    ]
+  },
+  {
+    "id": "ad-set-management-004",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "A 10 to 15 percent margin is the watch zone",
+    "content": "If profit margin is between 10% and 15%, the ad set is in the watch zone. Keep the budget unchanged and add new creatives. Treat this as a creative problem rather than a budget problem.",
+    "tags": [
+      "10% margin",
+      "15% margin",
+      "watch zone",
+      "creative problem",
+      "new creatives",
+      "profit margin"
+    ],
+    "questions": [
+      "My profit margin is 12%, what should I do?",
+      "What does the watch zone mean?",
+      "Should I reduce the budget at a 10-15% margin?",
+      "Should I add new creatives when margin is 10-15%?"
+    ]
+  },
+  {
+    "id": "ad-set-management-005",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Cut budget when profit margin is between 0 and 10 percent",
+    "content": "If profit margin is between 0% and 10%, reduce the budget by 30%. Wait 3 days after the reduction and then check the ad set again.",
+    "tags": [
+      "0% margin",
+      "10% margin",
       "cut budget",
-      "hold ad set",
-      "watch zone"
+      "reduce budget",
+      "30%",
+      "3 days"
     ],
     "questions": [
-      "My profit margin is 22%, what should I do?",
-      "My margin is 17%, should I scale?",
-      "My margin is 12%, should I cut the budget?",
-      "My margin is 5%, what should I do?",
-      "My ad set is losing money, should I turn it off?"
+      "My profit margin is 5%, what should I do?",
+      "Should I reduce the budget when margin is below 10%?",
+      "How much should I cut my budget at a 0-10% margin?"
     ]
   },
   {
-    "id": "ads-management-cpm-003",
+    "id": "ad-set-management-006",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "What to do when CPM increases",
-    "content": "If CPM increases by more than 30%, this can indicate auction pressure or seasonality. Do not immediately change or kill the ad set. Wait 2-3 days before taking action and evaluate whether the increase persists. CPM should be diagnosed together with profitability and other performance metrics rather than used alone.",
+    "title": "Cut hard or turn off when profit margin is negative",
+    "content": "If profit margin is below 0% and the ad set is losing money, reduce the budget by 50%, or turn the ad set off if the margin has been negative for 3 consecutive days.",
     "tags": [
-      "CPM",
-      "high CPM",
-      "CPM increase",
-      "auction pressure",
-      "seasonality",
-      "Meta Ads costs"
+      "negative margin",
+      "losing money",
+      "cut budget",
+      "50%",
+      "turn off ad set",
+      "3 days"
     ],
     "questions": [
-      "My CPM increased by 30%, what should I do?",
-      "My CPM is very high, should I turn off the ad set?",
-      "Why did my CPM suddenly increase?",
-      "Should I react immediately to a high CPM?"
+      "My ad set has a negative margin, what should I do?",
+      "Should I turn off an ad set that is losing money?",
+      "How much should I cut the budget when margin is negative?",
+      "How many negative days before I turn off the ad set?"
     ]
   },
   {
-    "id": "ads-management-cpc-cpa-004",
+    "id": "ad-set-management-007",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Stable CPC but rising CPA usually points to a conversion problem",
-    "content": "If CPC remains stable but CPA is increasing, fewer visitors are converting after the click. The ad itself is therefore not necessarily the problem. Check the website, site speed, checkout process and inventory before changing or killing the ad set.",
+    "title": "Diagnose the cause before changing an ad set",
+    "content": "A drop in ad set performance is a symptom. Before taking action, identify what actually broke. Do not automatically change, cut, or turn off an ad set simply because performance dropped.",
+    "tags": [
+      "diagnose ad set",
+      "performance drop",
+      "ad set problem",
+      "Meta Ads diagnosis",
+      "performance issue"
+    ],
+    "questions": [
+      "My ad set performance dropped, what should I do first?",
+      "Should I immediately turn off an ad set when performance drops?",
+      "How should I diagnose a declining ad set?"
+    ]
+  },
+  {
+    "id": "ad-set-management-008",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Rising frequency with stable CPM indicates audience fatigue",
+    "content": "If frequency is increasing while CPM remains stable, the audience has probably seen the creative too often. Add new creatives. Do not kill the ad set just because frequency is increasing under these conditions.",
+    "tags": [
+      "frequency",
+      "CPM",
+      "stable CPM",
+      "audience fatigue",
+      "creative fatigue",
+      "new creatives"
+    ],
+    "questions": [
+      "My frequency is going up but CPM is stable, what should I do?",
+      "Does rising frequency mean I should turn off the ad set?",
+      "How do I know if my audience has seen the ad too often?"
+    ]
+  },
+  {
+    "id": "ad-set-management-009",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Falling hook rate means the first three seconds need improvement",
+    "content": "Hook rate is calculated as 3-second video views divided by impressions. If hook rate is falling, the first 3 seconds of the creative have stopped working well. Create new hooks while keeping the same video body.",
+    "tags": [
+      "hook rate",
+      "3-second views",
+      "impressions",
+      "first 3 seconds",
+      "new hook",
+      "creative"
+    ],
+    "questions": [
+      "What is hook rate?",
+      "How do I calculate hook rate?",
+      "My hook rate is falling, what should I do?",
+      "Do I need a completely new video if my hook rate drops?"
+    ]
+  },
+  {
+    "id": "ad-set-management-010",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Stable CTR with falling conversion rate points to the website or offer",
+    "content": "If CTR remains stable but conversion rate is falling, the ads are still doing their job. The issue is more likely on the website, with the page, offer, or stock. Do not assume the ad set is the problem.",
+    "tags": [
+      "CTR",
+      "conversion rate",
+      "website",
+      "product page",
+      "offer",
+      "stock",
+      "Meta Ads"
+    ],
+    "questions": [
+      "My CTR is stable but conversion rate is falling, what should I do?",
+      "Is my ad bad if CTR is stable but sales are dropping?",
+      "How do I know if the problem is my website instead of my ads?"
+    ]
+  },
+  {
+    "id": "ad-set-management-011",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Stable CPC with rising CPA indicates a post-click conversion problem",
+    "content": "If CPC remains stable but CPA is rising, fewer people are buying after they click the ad. Check site speed, checkout, and inventory. The click performance itself is not necessarily the problem.",
     "tags": [
       "CPC",
       "CPA",
       "stable CPC",
       "rising CPA",
-      "conversion problem",
-      "checkout",
       "site speed",
-      "inventory"
+      "checkout",
+      "inventory",
+      "conversion"
     ],
     "questions": [
-      "My CPC is stable but my CPA is rising, what should I do?",
-      "Is my ad bad if CPC is stable but purchases decrease?",
-      "Should I turn off an ad set when CPA rises?",
-      "What should I check when clicks are fine but conversions are down?"
+      "My CPC is stable but CPA is rising, what should I do?",
+      "Why is my CPA increasing even though CPC is stable?",
+      "Should I kill my ad if CPC is stable but CPA is rising?",
+      "What should I check when clicks are fine but purchases are dropping?"
     ]
   },
   {
-    "id": "ads-management-ctr-conversion-005",
+    "id": "ad-set-management-012",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Stable CTR with falling conversion rate indicates a website or offer issue",
-    "content": "If CTR is stable but conversion rate is falling, the ads are generally still doing their job. The problem is more likely on the website, with the offer, or with stock availability. Do not automatically kill the ad set when click metrics are healthy but conversions have dropped.",
+    "title": "A CPM increase of more than 30 percent may be auction pressure or seasonality",
+    "content": "If CPM increases by more than 30%, the cause may be auction pressure or seasonality. Wait 2-3 days before taking action instead of reacting immediately.",
     "tags": [
-      "CTR",
-      "conversion rate",
-      "website problem",
-      "offer",
-      "stock",
-      "click metrics"
+      "CPM",
+      "high CPM",
+      "CPM increase",
+      "30%",
+      "auction pressure",
+      "seasonality",
+      "wait 2-3 days"
     ],
     "questions": [
-      "My CTR is stable but conversion rate is falling, what does that mean?",
-      "Should I kill the ad set if CTR is good but sales are down?",
-      "How do I know if the problem is my ad or my website?"
+      "My CPM increased by more than 30%, what should I do?",
+      "Why did my CPM suddenly increase?",
+      "Should I turn off an ad set because CPM went up?",
+      "How long should I wait after a CPM increase?"
     ]
   },
   {
-    "id": "ads-management-frequency-006",
+    "id": "ad-set-management-013",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Rising frequency with stable CPM usually means creative fatigue",
-    "content": "If frequency is rising while CPM remains stable, the audience has likely seen the ads too often. Add new creatives instead of killing the ad set. New creatives should also be added when frequency exceeds 2.5 over 7 days.",
+    "title": "Healthy click metrics with falling conversions should not lead to killing the ad set",
+    "content": "If click metrics are still healthy but conversions have dropped, killing the ad set does not fix the underlying problem. Investigate what happens after the click instead.",
     "tags": [
-      "frequency",
-      "creative fatigue",
-      "ad fatigue",
+      "click metrics",
+      "conversions",
+      "kill ad set",
+      "post-click",
+      "conversion problem",
+      "diagnosis"
+    ],
+    "questions": [
+      "My click metrics are good but conversions dropped, should I turn off the ad set?",
+      "What should I do when clicks are good but sales are down?",
+      "Can the ad set still be good if conversions are falling?"
+    ]
+  },
+  {
+    "id": "ad-set-management-014",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Add new creatives to the existing ad set",
+    "content": "When adding new creatives, add them to the existing ad set rather than creating a new ad set for the new creative.",
+    "tags": [
+      "new creatives",
+      "existing ad set",
+      "new ad set",
+      "creative testing"
+    ],
+    "questions": [
+      "Should I create a new ad set for a new creative?",
+      "Where should I add new creatives?",
+      "Should new creatives go into the existing ad set?"
+    ]
+  },
+  {
+    "id": "ad-set-management-015",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Conditions for adding new creatives",
+    "content": "Add new creatives when profit margin drops into the 10-15% watch zone, when frequency exceeds 2.5 over 7 days, when hook rate is 20% lower than it was during the creative's first week, or when the ad set has been running for 14 or more days without anything new.",
+    "tags": [
+      "new creatives",
+      "10-15% margin",
+      "watch zone",
       "frequency 2.5",
-      "new creatives",
-      "CPM stable"
-    ],
-    "questions": [
-      "My frequency is increasing but CPM is stable, what should I do?",
-      "When is frequency too high?",
-      "Should I turn off an ad set when frequency rises?",
-      "When should I add new creatives?"
-    ]
-  },
-  {
-    "id": "ads-management-hook-rate-007",
-    "type": "course_content",
-    "category": "Meta Ads",
-    "module": "Ad Set Management",
-    "moduleNumber": 0,
-    "lesson": "Ad Set Management SOP",
-    "title": "A falling hook rate means the first three seconds need new hooks",
-    "content": "Hook rate is measured as 3-second video views divided by impressions. If hook rate falls, the opening of the creative is no longer performing well. Create new hooks but keep the existing video body. Add new creatives when hook rate is 20% lower than it was during the creative's first week.",
-    "tags": [
       "hook rate",
-      "3 second views",
-      "impressions",
-      "new hooks",
-      "creative fatigue",
-      "20 percent lower"
-    ],
-    "questions": [
-      "My hook rate is falling, what should I do?",
-      "How is hook rate calculated?",
-      "Should I make a completely new ad if the hook rate drops?",
-      "When should I replace the hook?"
-    ]
-  },
-  {
-    "id": "ads-management-creatives-008",
-    "type": "course_content",
-    "category": "Meta Ads",
-    "module": "Ad Set Management",
-    "moduleNumber": 0,
-    "lesson": "Ad Set Management SOP",
-    "title": "When and how to add new creatives",
-    "content": "Add new creatives to the existing ad set, not to a new ad set. Add creatives when margin enters the 10-15% watch zone, frequency exceeds 2.5 over 7 days, hook rate is 20% below the creative's first week, or the ad set has run for 14 or more days without new creatives. Recommended weekly volume: low budget 2-3 creatives, medium budget 4-6, high budget 8-12. The recommended mix is 60% iterations of the current winner, 25% variations and 15% completely new concepts.",
-    "tags": [
-      "new creatives",
-      "creative testing",
-      "creative iterations",
-      "creative variations",
-      "new concepts",
-      "ad set"
+      "20% lower",
+      "14 days"
     ],
     "questions": [
       "When should I add new creatives?",
-      "Should new creatives go into a new ad set?",
-      "How many creatives should I add per week?",
-      "What percentage should be iterations versus new concepts?"
+      "Is a frequency above 2.5 too high?",
+      "When is a hook rate drop large enough to add new creatives?",
+      "How long can an ad set run without new creatives?"
     ]
   },
   {
-    "id": "ads-management-budget-cuts-009",
+    "id": "ad-set-management-016",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "How to reduce an ad set budget correctly",
-    "content": "Never reduce an ad set budget by more than 50% at once because large cuts can reset the learning phase. A typical recovery process is to cut the budget by 30%, wait 3 days and review again. If margin recovers above 15%, hold for another 3 days and then consider scaling. If it remains in the watch zone, cut another 30%. If it remains below break-even after two cuts, turn it off. If an ad set used to work, try new creatives before killing it because the targeting may still be fine.",
+    "title": "Recommended number of new creatives per week",
+    "content": "The recommended number of new creatives per week depends on budget level. For a low budget, add 2-3 new creatives per week. For a medium budget, add 4-6. For a high budget, add 8-12.",
+    "tags": [
+      "creative volume",
+      "low budget",
+      "medium budget",
+      "high budget",
+      "2-3 creatives",
+      "4-6 creatives",
+      "8-12 creatives"
+    ],
+    "questions": [
+      "How many new creatives should I make per week?",
+      "How many creatives should I add with a low budget?",
+      "How many creatives should I add with a medium budget?",
+      "How many creatives should I add with a high budget?"
+    ]
+  },
+  {
+    "id": "ad-set-management-017",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Use a 60 25 15 creative testing mix",
+    "content": "For new creatives, use approximately 60% iterations of the current winner, such as a new hook with the same video body. Use 25% variations, such as a different format, different person, or different angle on the same idea. Use 15% completely new concepts.",
+    "tags": [
+      "creative mix",
+      "60%",
+      "25%",
+      "15%",
+      "winner iteration",
+      "creative variations",
+      "new concepts"
+    ],
+    "questions": [
+      "What types of new creatives should I create?",
+      "How much of my creative testing should be winner iterations?",
+      "What is the 60 25 15 creative rule?",
+      "How many completely new concepts should I test?"
+    ]
+  },
+  {
+    "id": "ad-set-management-018",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Most completely new creative concepts will fail",
+    "content": "Most completely new creative concepts will fail. This is normal. Testing new concepts is how you find the next winning creative.",
+    "tags": [
+      "new concepts",
+      "creative failure",
+      "creative testing",
+      "winner",
+      "new winner"
+    ],
+    "questions": [
+      "Is it normal that most new creative concepts fail?",
+      "Why should I test new concepts if most of them fail?",
+      "How do I find the next winning creative?"
+    ]
+  },
+  {
+    "id": "ad-set-management-019",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Create a new ad set only when targeting changes",
+    "content": "Create a new ad set only when the targeting changes, such as targeting a different country, a different audience, or separating cold traffic from retargeting. Never create a new ad set simply because you have a different creative.",
+    "tags": [
+      "new ad set",
+      "targeting",
+      "different country",
+      "different audience",
+      "cold traffic",
+      "retargeting",
+      "creative"
+    ],
+    "questions": [
+      "When should I create a new ad set?",
+      "Should I create a new ad set for a different creative?",
+      "Do I need a new ad set for another country?",
+      "Should cold traffic and retargeting use different ad sets?"
+    ]
+  },
+  {
+    "id": "ad-set-management-020",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Never cut an ad set budget by more than 50 percent at once",
+    "content": "Never reduce an ad set budget by more than 50% at once. Large budget reductions can reset the learning phase in the same way that large budget increases can.",
+    "tags": [
+      "budget cut",
+      "50%",
+      "learning phase",
+      "budget reduction",
+      "Meta learning"
+    ],
+    "questions": [
+      "Can I cut an ad set budget by more than 50%?",
+      "Will a large budget cut reset the learning phase?",
+      "How much can I reduce my budget at once?"
+    ]
+  },
+  {
+    "id": "ad-set-management-021",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Follow a staged process when cutting budget",
+    "content": "When reducing budget, first cut it by 30% and wait 3 days. If profit margin recovers above 15%, hold the budget for 3 more days and then begin scaling again. If the ad set is still in the 10-15% watch zone, cut the budget by another 30%. If it is still below break-even after two cuts, turn the ad set off.",
     "tags": [
       "cut budget",
-      "reduce budget",
-      "learning phase",
-      "30 percent cut",
-      "50 percent cut",
-      "break even"
+      "30%",
+      "wait 3 days",
+      "15% margin",
+      "watch zone",
+      "break-even",
+      "turn off"
     ],
     "questions": [
-      "How much should I reduce my Meta Ads budget?",
-      "Can I cut an ad set by more than 50%?",
-      "What should I do after reducing the budget by 30%?",
-      "When should I turn an ad set off after budget cuts?"
+      "What should I do after cutting the budget by 30%?",
+      "When can I start scaling again after a budget cut?",
+      "Should I cut another 30% if the ad set is still in the watch zone?",
+      "When should I turn off an ad set after two budget cuts?"
     ]
   },
   {
-    "id": "ads-management-turn-off-010",
+    "id": "ad-set-management-022",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Conditions for turning off an ad set immediately",
-    "content": "Turn an ad set off when margin has remained negative for 3 consecutive days after the budget was already reduced, when spend reaches 2 times the normal cost per purchase with zero sales, when cost per purchase is more than double the 30-day average for 2 days at meaningful spend, or when frequency is above 4, margin is falling and new creatives have already been tested.",
+    "title": "Try new creatives before killing an ad set that used to work",
+    "content": "Before turning off an ad set that previously performed well, try new creatives first. In many cases, the targeting is still fine and the existing creatives are simply burnt out.",
     "tags": [
+      "used to work",
       "turn off ad set",
-      "negative margin",
-      "zero sales",
-      "cost per purchase",
-      "CPA",
-      "frequency 4"
+      "creative fatigue",
+      "burnt out creatives",
+      "targeting",
+      "new creatives"
     ],
     "questions": [
-      "When should I turn off an ad set?",
-      "I spent twice my normal cost per purchase with no sales, should I stop it?",
-      "My CPA is double my normal average, what should I do?",
-      "My frequency is above 4 and margin is falling, should I kill the ad set?"
+      "My ad set used to work but now performance is worse, should I turn it off?",
+      "Should I test new creatives before killing an old winning ad set?",
+      "How do I know if targeting is still good but creatives are burnt out?"
     ]
   },
   {
-    "id": "ads-management-attribution-011",
+    "id": "ad-set-management-023",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Account for attribution lag before making ad set decisions",
-    "content": "Meta may report sales late, particularly with 7-day click attribution. Yesterday's Ads Manager numbers can therefore look worse than the real performance. Always check store data before turning off something that has significant spend.",
+    "title": "Turn off when margin stays negative after a budget cut",
+    "content": "Turn the ad set off immediately when profit margin has been negative for 3 consecutive days after the budget has already been reduced.",
+    "tags": [
+      "negative margin",
+      "3 days",
+      "budget cut",
+      "turn off immediately",
+      "losing money"
+    ],
+    "questions": [
+      "My margin has been negative for 3 days after a budget cut, what should I do?",
+      "When should I turn off a losing ad set after cutting the budget?"
+    ]
+  },
+  {
+    "id": "ad-set-management-024",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Turn off after spending twice the normal cost per purchase with zero sales",
+    "content": "Turn the ad set off if it has spent 2 times your normal cost per purchase and generated zero sales.",
+    "tags": [
+      "2x cost per purchase",
+      "zero sales",
+      "turn off",
+      "CPP",
+      "cost per purchase"
+    ],
+    "questions": [
+      "I spent twice my normal cost per purchase with no sales, should I turn it off?",
+      "How much can I spend with zero sales before turning off an ad set?"
+    ]
+  },
+  {
+    "id": "ad-set-management-025",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Turn off when cost per purchase doubles for two days",
+    "content": "Turn the ad set off if cost per purchase is more than double the 30-day average for 2 days while the ad set is spending at a meaningful level.",
+    "tags": [
+      "cost per purchase",
+      "CPP",
+      "CPA",
+      "double average",
+      "30-day average",
+      "2 days",
+      "real spend"
+    ],
+    "questions": [
+      "My cost per purchase is twice my 30-day average, what should I do?",
+      "How long should CPA be double before I turn off the ad set?",
+      "Should I kill an ad set when cost per purchase doubles?"
+    ]
+  },
+  {
+    "id": "ad-set-management-026",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Turn off when frequency is above 4 after new creatives fail",
+    "content": "Turn the ad set off if frequency is above 4, profit margin is falling, and new creatives have already been tested without fixing the problem.",
+    "tags": [
+      "frequency 4",
+      "falling margin",
+      "new creatives",
+      "turn off",
+      "creative fatigue"
+    ],
+    "questions": [
+      "My frequency is above 4, should I turn off the ad set?",
+      "What should I do if frequency is above 4 and margin keeps falling?",
+      "Should I turn off an ad set if new creatives did not fix high frequency?"
+    ]
+  },
+  {
+    "id": "ad-set-management-027",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Daily ad set management routine",
+    "content": "The recommended daily ad set management routine takes about 10 minutes. Open the 3-day view and the 7-day view side by side. Sort ad sets by spend, highest first. Review each ad set one by one using the profit margin decision rules. For anything in the 10-15% watch zone, check frequency, hook rate, and CPM before deciding what to do.",
+    "tags": [
+      "daily routine",
+      "10 minutes",
+      "3-day view",
+      "7-day view",
+      "sort by spend",
+      "watch zone",
+      "frequency",
+      "hook rate",
+      "CPM"
+    ],
+    "questions": [
+      "What should my daily Meta Ads routine look like?",
+      "How should I review my ad sets every day?",
+      "Should I look at the 3-day and 7-day views?",
+      "What metrics should I check in the watch zone?"
+    ]
+  },
+  {
+    "id": "ad-set-management-028",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Log every ad set decision",
+    "content": "Record every ad set decision. Write down the date, the ad set, the profit margin, what action you took, and why you took it.",
+    "tags": [
+      "decision log",
+      "ad set log",
+      "date",
+      "profit margin",
+      "decision",
+      "tracking"
+    ],
+    "questions": [
+      "Should I document my Meta Ads decisions?",
+      "What should I write in my ad set decision log?",
+      "Why should I track changes I make to ad sets?"
+    ]
+  },
+  {
+    "id": "ad-set-management-029",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Use the decision log to learn from your own account",
+    "content": "After 6-8 weeks, review your decision log to see which decisions were correct and which were panic reactions. This helps you learn what actually works in your own account instead of blindly following a generic rule.",
+    "tags": [
+      "6-8 weeks",
+      "decision log",
+      "review decisions",
+      "panic decisions",
+      "account learning",
+      "Meta Ads experience"
+    ],
+    "questions": [
+      "How often should I review my ad decision log?",
+      "Why should I look back at decisions after 6-8 weeks?",
+      "How can I learn what works specifically in my ad account?"
+    ]
+  },
+  {
+    "id": "ad-set-management-030",
+    "type": "course_content",
+    "category": "Meta Ads",
+    "module": "Ad Set Management",
+    "moduleNumber": 0,
+    "lesson": "Ad Set Management SOP",
+    "title": "Account for Meta attribution lag before turning off ads",
+    "content": "Meta can report sales late, especially when using a 7-day click attribution window. Yesterday's numbers in Ads Manager are often worse than the real result. Always check your store data before turning off something that has spent a significant amount.",
     "tags": [
       "attribution lag",
-      "Meta attribution",
-      "7 day click",
+      "7-day click",
+      "Meta reporting",
       "Ads Manager",
       "store data",
       "delayed sales"
     ],
     "questions": [
-      "Why do yesterday's Meta results look worse?",
-      "Should I trust yesterday's Ads Manager data?",
-      "What is attribution lag?",
-      "Should I check Shopify before turning off an ad?"
+      "What is attribution lag in Meta Ads?",
+      "Why do yesterday's Meta results sometimes look worse?",
+      "Should I trust yesterday's Ads Manager numbers?",
+      "Should I check my store before turning off an expensive ad set?"
     ]
   },
   {
-    "id": "ads-management-after-scaling-012",
+    "id": "ad-set-management-031",
     "type": "course_content",
     "category": "Meta Ads",
     "module": "Ad Set Management",
     "moduleNumber": 0,
     "lesson": "Ad Set Management SOP",
-    "title": "Do not judge performance immediately after scaling",
-    "content": "After increasing an ad set budget, give the ad set 2-3 days before judging the result. A temporary dip immediately after a budget increase can be caused by the algorithm re-learning and does not automatically mean the scaling failed.",
+    "title": "Do not judge an ad set immediately after scaling",
+    "content": "After increasing an ad set budget, give it 2-3 days before judging the result. A performance dip immediately after increasing the budget can be caused by the algorithm re-learning and does not automatically mean the scaling failed.",
     "tags": [
       "after scaling",
-      "budget increase",
-      "learning phase",
       "2-3 days",
-      "performance dip"
+      "budget increase",
+      "re-learning",
+      "algorithm",
+      "performance dip",
+      "scaling"
     ],
     "questions": [
-      "My performance dropped after scaling, should I reduce the budget?",
-      "How long should I wait after increasing an ad set budget?",
-      "Why did results get worse immediately after scaling?"
+      "My results got worse right after scaling, should I cut the budget?",
+      "How long should I wait after scaling before judging performance?",
+      "Why does performance sometimes dip after increasing the budget?",
+      "Does a drop right after scaling mean the scale failed?"
     ]
   }
 ]
