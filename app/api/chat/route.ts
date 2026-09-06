@@ -18,6 +18,8 @@ const ChatMessageSchema = z.object({
 });
 
 const MAX_IMAGE_DATA_URL_LENGTH = 5_000_000;
+const MAX_IMAGES = 6;
+const MAX_TOTAL_IMAGE_DATA_URL_LENGTH = 16_000_000;
 
 const ImageSchema = z.object({
     dataUrl: z
@@ -32,14 +34,33 @@ const ChatRequestSchema = z
     .object({
         message: z.string().max(800).optional().default(""),
         history: z.array(ChatMessageSchema).max(8).optional(),
-        image: ImageSchema.optional(),
+        images: z.array(ImageSchema).max(MAX_IMAGES).optional(),
     })
     .superRefine((value, context) => {
-        if (!value.message.trim() && !value.image) {
+        const images = value.images ?? [];
+
+        if (!value.message.trim() && images.length === 0) {
             context.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: "Message or image is required.",
                 path: ["message"],
+            });
+        }
+
+        const totalImageDataUrlLength = images.reduce(
+            (sum, image) => sum + image.dataUrl.length,
+            0
+        );
+
+        if (
+            totalImageDataUrlLength >
+            MAX_TOTAL_IMAGE_DATA_URL_LENGTH
+        ) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message:
+                    "Combined image payload is too large.",
+                path: ["images"],
             });
         }
     });
@@ -1296,17 +1317,18 @@ export async function POST(req: NextRequest) {
 
         const userMessage = parsed.data.message.trim();
         const history = parsed.data.history ?? [];
-        const image = parsed.data.image;
+        const images = parsed.data.images ?? [];
+        const hasImages = images.length > 0;
 
         const fallbackImageQuestion =
             courseConfig.language === "en"
-                ? "Analyze the attached image using the relevant course criteria."
-                : "Analysiere das angehängte Bild anhand der passenden Kurskriterien.";
+                ? "Analyze the attached image or images using the relevant course criteria."
+                : "Analysiere das angehängte Bild oder die angehängten Bilder anhand der passenden Kurskriterien.";
 
         const effectiveUserMessage =
             userMessage || fallbackImageQuestion;
 
-        const knowledgeSearchQuery = image
+        const knowledgeSearchQuery = hasImages
             ? courseConfig.language === "en"
                 ? `${effectiveUserMessage}
 
@@ -1406,23 +1428,22 @@ Insert one completely empty line between headings, numbered points, paragraphs a
 Do not compress separate sections into continuous text.
 Do not invent your own response structure.
 
-${image
+${hasImages
                                             ? courseConfig.language === "en"
-                                                ? "An image is attached. Identify the relevant product or content internally and answer the user's question directly without first describing the image. Follow the required Markdown structure exactly. Use real empty lines between headings, numbered points, paragraphs and lists. Do not compress the answer into continuous text."
-                                                : "Ein Bild ist angehängt. Erkenne das relevante Produkt oder den Inhalt intern und beantworte direkt die Frage des Nutzers, ohne zuerst das Bild ausführlich zu beschreiben. Halte dich exakt an die vorgegebene Markdown-Struktur. Setze echte freie Zeilen zwischen Überschriften, nummerierten Punkten, Absätzen und Listen. Fasse die Antwort nicht zu einem durchgehenden Textblock zusammen."
+                                                ? images.length === 1
+                                                    ? "An image is attached. Identify the relevant product or content internally and answer the user's question directly without first describing the image. Follow the required Markdown structure exactly. Use real empty lines between headings, numbered points, paragraphs and lists. Do not compress the answer into continuous text."
+                                                    : `${images.length} images are attached. Analyze them together when useful, especially if they show different parts of the same product page, Meta Ads screenshots, product images, creatives or store screenshots. Identify the relevant product or content internally and answer the user's question directly without first describing the images. Follow the required Markdown structure exactly. Use real empty lines between headings, numbered points, paragraphs and lists. Do not compress the answer into continuous text.`
+                                                : images.length === 1
+                                                    ? "Ein Bild ist angehängt. Erkenne das relevante Produkt oder den Inhalt intern und beantworte direkt die Frage des Nutzers, ohne zuerst das Bild ausführlich zu beschreiben. Halte dich exakt an die vorgegebene Markdown-Struktur. Setze echte freie Zeilen zwischen Überschriften, nummerierten Punkten, Absätzen und Listen. Fasse die Antwort nicht zu einem durchgehenden Textblock zusammen."
+                                                    : `${images.length} Bilder sind angehängt. Analysiere sie gemeinsam, wenn es sinnvoll ist, besonders wenn sie unterschiedliche Bereiche derselben Produktseite, Meta-Ads-Screenshots, Produktbilder, Creatives oder Shop-Screenshots zeigen. Erkenne das relevante Produkt oder den Inhalt intern und beantworte direkt die Frage des Nutzers, ohne zuerst die Bilder ausführlich zu beschreiben. Halte dich exakt an die vorgegebene Markdown-Struktur. Setze echte freie Zeilen zwischen Überschriften, nummerierten Punkten, Absätzen und Listen. Fasse die Antwort nicht zu einem durchgehenden Textblock zusammen.`
                                             : ""}
 `,
                                     },
-                                    ...(image
-                                        ? [
-                                            {
-                                                type: "input_image" as const,
-                                                image_url:
-                                                image.dataUrl,
-                                                detail: "high" as const,
-                                            },
-                                        ]
-                                        : []),
+                                    ...images.map((image) => ({
+                                        type: "input_image" as const,
+                                        image_url: image.dataUrl,
+                                        detail: "high" as const,
+                                    })),
                                 ],
                             },
                         ],

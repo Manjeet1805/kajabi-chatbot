@@ -59,11 +59,15 @@ Just ask me anything.`,
                 attachImage: "Attach image",
                 removeImage: "Remove image",
                 attachedImage: "Attached image",
+                attachedImages: "Attached images",
                 imagePreview: "Image preview",
                 imageReady: "Ready to send",
+                dropImages: "Drop images here",
                 processingImage: "Preparing image...",
                 defaultImageMessage:
                     "Please analyze this image.",
+                maxImagesError:
+                    "You can attach a maximum of 6 images.",
                 imageTypeError:
                     "Please upload a JPG, PNG, WebP, HEIC or HEIF image.",
                 imageSizeError:
@@ -103,11 +107,15 @@ Frag mich einfach los.`,
                 attachImage: "Bild anhängen",
                 removeImage: "Bild entfernen",
                 attachedImage: "Angehängtes Bild",
+                attachedImages: "Angehängte Bilder",
                 imagePreview: "Bildvorschau",
                 imageReady: "Bereit zum Senden",
+                dropImages: "Bilder hier ablegen",
                 processingImage: "Bild wird vorbereitet...",
                 defaultImageMessage:
                     "Bitte analysiere dieses Bild.",
+                maxImagesError:
+                    "Du kannst maximal 6 Bilder anhängen.",
                 imageTypeError:
                     "Bitte lade ein JPG-, PNG-, WebP-, HEIC- oder HEIF-Bild hoch.",
                 imageSizeError:

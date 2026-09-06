@@ -2,6 +2,7 @@
 
 import {
     type ChangeEvent,
+    type DragEvent,
     useEffect,
     useRef,
     useState,
@@ -42,6 +43,7 @@ type Message = {
     role: "user" | "assistant";
     content: string;
     sources?: Source[];
+    imageUrls?: string[];
     imageUrl?: string;
 };
 
@@ -61,8 +63,10 @@ type SseEvent = {
 };
 
 const MAX_STORED_MESSAGES = 30;
+const MAX_IMAGES = 6;
 const MAX_IMAGE_FILE_SIZE = 8 * 1024 * 1024;
 const MAX_IMAGE_DATA_URL_LENGTH = 5_000_000;
+const MAX_TOTAL_IMAGE_DATA_URL_LENGTH = 16_000_000;
 const MAX_IMAGE_DIMENSION = 1600;
 
 const LAUNCHER_COLLAPSED_STORAGE_KEY =
@@ -111,7 +115,11 @@ function saveStoredMessages(messages: Message[]) {
             (message) =>
                 message.content.trim().length > 0
         )
-        .map(({ imageUrl: _imageUrl, ...message }) => message)
+        .map((message) => ({
+            role: message.role,
+            content: message.content,
+            sources: message.sources,
+        }))
         .slice(-MAX_STORED_MESSAGES);
 
     window.localStorage.setItem(
@@ -339,6 +347,31 @@ function parseSseChunk(chunk: string): Array<SseEvent | null> {
     });
 }
 
+function getImageErrorMessage(error: unknown): string {
+    const code =
+        error instanceof Error ? error.message : "";
+
+    if (code === "IMAGE_TYPE_NOT_ALLOWED") {
+        return clientCourseConfig.text.imageTypeError;
+    }
+
+    if (
+        code === "IMAGE_TOO_LARGE" ||
+        code === "IMAGE_TOO_LARGE_AFTER_PROCESSING" ||
+        code === "IMAGES_TOTAL_TOO_LARGE"
+    ) {
+        return clientCourseConfig.text.imageSizeError;
+    }
+
+    return clientCourseConfig.text.imageProcessingError;
+}
+
+function isFileDrag(event: DragEvent<HTMLElement>): boolean {
+    return Array.from(event.dataTransfer.types).includes(
+        "Files"
+    );
+}
+
 export default function ChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] =
@@ -354,10 +387,12 @@ export default function ChatWidget() {
         useState<Message[]>(INITIAL_MESSAGES);
 
     const [input, setInput] = useState("");
-    const [selectedImage, setSelectedImage] =
-        useState<SelectedImage | null>(null);
+    const [selectedImages, setSelectedImages] =
+        useState<SelectedImage[]>([]);
     const [imageError, setImageError] =
         useState<string | null>(null);
+    const [isDraggingImages, setIsDraggingImages] =
+        useState(false);
     const [isPreparingImage, setIsPreparingImage] =
         useState(false);
     const [isLoading, setIsLoading] =
@@ -370,6 +405,8 @@ export default function ChatWidget() {
         useRef<HTMLDivElement | null>(null);
     const fileInputRef =
         useRef<HTMLInputElement | null>(null);
+    const selectedImagesRef = useRef<SelectedImage[]>([]);
+    const dragDepthRef = useRef(0);
 
     const shouldAnimateIframeRef = useRef(false);
 
@@ -463,8 +500,11 @@ export default function ChatWidget() {
 
     function resetConversation() {
         setMessages(INITIAL_MESSAGES);
-        setSelectedImage(null);
+        selectedImagesRef.current = [];
+        setSelectedImages([]);
         setImageError(null);
+        setIsDraggingImages(false);
+        dragDepthRef.current = 0;
 
         window.localStorage.removeItem(
             clientCourseConfig.storageKey
@@ -535,41 +575,100 @@ export default function ChatWidget() {
         };
     }
 
-    async function handleImageSelection(
-        event: ChangeEvent<HTMLInputElement>
-    ) {
-        const file = event.target.files?.[0];
-
-        event.target.value = "";
-
-        if (!file) {
+    async function addImageFiles(files: File[]) {
+        if (isLoading || isPreparingImage || files.length === 0) {
             return;
         }
+
+        const remainingSlots =
+            MAX_IMAGES - selectedImagesRef.current.length;
+
+        if (remainingSlots <= 0) {
+            setImageError(clientCourseConfig.text.maxImagesError);
+            return;
+        }
+
+        const filesToProcess = files.slice(0, remainingSlots);
+        const hasTooManyFiles =
+            files.length > remainingSlots;
 
         setImageError(null);
         setIsPreparingImage(true);
 
         try {
-            const preparedImage = await prepareImage(file);
-            setSelectedImage(preparedImage);
-        } catch (error) {
-            const code =
-                error instanceof Error ? error.message : "";
+            const results = await Promise.allSettled(
+                filesToProcess.map((file) => prepareImage(file))
+            );
 
-            if (code === "IMAGE_TYPE_NOT_ALLOWED") {
-                setImageError(
-                    clientCourseConfig.text.imageTypeError
-                );
-            } else if (
-                code === "IMAGE_TOO_LARGE" ||
-                code === "IMAGE_TOO_LARGE_AFTER_PROCESSING"
+            const successfulImages = results.flatMap((result) =>
+                result.status === "fulfilled"
+                    ? [result.value]
+                    : []
+            );
+
+            const failedResult = results.find(
+                (result) => result.status === "rejected"
+            );
+
+            let totalTooLarge = false;
+            const imagesToAdd: SelectedImage[] = [];
+            const currentImages = selectedImagesRef.current;
+            const availableSlots =
+                MAX_IMAGES - currentImages.length;
+
+            if (
+                successfulImages.length > 0 &&
+                availableSlots > 0
             ) {
+                let totalLength = currentImages.reduce(
+                    (sum, image) => sum + image.dataUrl.length,
+                    0
+                );
+
+                for (const image of successfulImages.slice(
+                    0,
+                    availableSlots
+                )) {
+                    const nextTotalLength =
+                        totalLength + image.dataUrl.length;
+
+                    if (
+                        nextTotalLength >
+                        MAX_TOTAL_IMAGE_DATA_URL_LENGTH
+                    ) {
+                        totalTooLarge = true;
+                        continue;
+                    }
+
+                    imagesToAdd.push(image);
+                    totalLength = nextTotalLength;
+                }
+
+                if (imagesToAdd.length > 0) {
+                    const nextImages = [
+                        ...currentImages,
+                        ...imagesToAdd,
+                    ];
+
+                    selectedImagesRef.current = nextImages;
+                    setSelectedImages(nextImages);
+                }
+            }
+
+            if (failedResult?.status === "rejected") {
+                setImageError(
+                    getImageErrorMessage(failedResult.reason)
+                );
+            } else if (totalTooLarge) {
                 setImageError(
                     clientCourseConfig.text.imageSizeError
                 );
-            } else {
+            } else if (
+                hasTooManyFiles ||
+                imagesToAdd.length < successfulImages.length
+            ) {
                 setImageError(
-                    clientCourseConfig.text.imageProcessingError
+                    clientCourseConfig.text.maxImagesError
                 );
             }
         } finally {
@@ -577,15 +676,105 @@ export default function ChatWidget() {
         }
     }
 
+    async function handleImageSelection(
+        event: ChangeEvent<HTMLInputElement>
+    ) {
+        const files = Array.from(event.target.files ?? []);
+
+        event.target.value = "";
+
+        await addImageFiles(files);
+    }
+
+    function removeSelectedImage(indexToRemove: number) {
+        const nextImages = selectedImagesRef.current.filter(
+            (_image, index) => index !== indexToRemove
+        );
+
+        selectedImagesRef.current = nextImages;
+        setSelectedImages(nextImages);
+        setImageError(null);
+    }
+
+    function handleComposerDragEnter(
+        event: DragEvent<HTMLDivElement>
+    ) {
+        if (!isFileDrag(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        dragDepthRef.current += 1;
+        setIsDraggingImages(true);
+    }
+
+    function handleComposerDragOver(
+        event: DragEvent<HTMLDivElement>
+    ) {
+        if (!isFileDrag(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+        setIsDraggingImages(true);
+    }
+
+    function handleComposerDragLeave(
+        event: DragEvent<HTMLDivElement>
+    ) {
+        if (!isFileDrag(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        dragDepthRef.current = Math.max(
+            0,
+            dragDepthRef.current - 1
+        );
+
+        if (dragDepthRef.current === 0) {
+            setIsDraggingImages(false);
+        }
+    }
+
+    function handleComposerDrop(
+        event: DragEvent<HTMLDivElement>
+    ) {
+        if (!isFileDrag(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        dragDepthRef.current = 0;
+        setIsDraggingImages(false);
+
+        const files = Array.from(event.dataTransfer.files);
+        void addImageFiles(files);
+    }
+
     async function sendMessage() {
         const text = input.trim();
-        const imageToSend = selectedImage;
+        const imagesToSend = selectedImagesRef.current;
 
         if (
-            (!text && !imageToSend) ||
+            (!text && imagesToSend.length === 0) ||
             isLoading ||
             isPreparingImage
         ) {
+            return;
+        }
+
+        const totalImageDataUrlLength = imagesToSend.reduce(
+            (sum, image) => sum + image.dataUrl.length,
+            0
+        );
+
+        if (
+            totalImageDataUrlLength >
+            MAX_TOTAL_IMAGE_DATA_URL_LENGTH
+        ) {
+            setImageError(clientCourseConfig.text.imageSizeError);
             return;
         }
 
@@ -600,7 +789,9 @@ export default function ChatWidget() {
             {
                 role: "user",
                 content: displayText,
-                imageUrl: imageToSend?.dataUrl,
+                imageUrls: imagesToSend.map(
+                    (image) => image.dataUrl
+                ),
             },
             {
                 role: "assistant",
@@ -610,7 +801,8 @@ export default function ChatWidget() {
         ]);
 
         setInput("");
-        setSelectedImage(null);
+        selectedImagesRef.current = [];
+        setSelectedImages([]);
         setImageError(null);
         setIsLoading(true);
 
@@ -625,11 +817,11 @@ export default function ChatWidget() {
                 body: JSON.stringify({
                     message: text,
                     history: messages.slice(-8),
-                    image: imageToSend
-                        ? {
-                            dataUrl: imageToSend.dataUrl,
-                            mimeType: imageToSend.mimeType,
-                        }
+                    images: imagesToSend.length
+                        ? imagesToSend.map((image) => ({
+                            dataUrl: image.dataUrl,
+                            mimeType: image.mimeType,
+                        }))
                         : undefined,
                 }),
             });
@@ -787,7 +979,7 @@ export default function ChatWidget() {
         >
             {isOpen && (
                 <div
-                    className={`flex flex-col overflow-hidden bg-white ${
+                    className={`relative flex flex-col overflow-hidden bg-white ${
                         isMobileHost
                             ? "pointer-events-auto fixed inset-0 z-50 h-[100dvh] w-screen max-w-none rounded-none border-0 shadow-none"
                             : `absolute bottom-[90px] right-0 h-[520px] max-w-[calc(100vw-32px)] rounded-3xl border border-black/10 shadow-2xl transition-[width] duration-200 ${
@@ -796,7 +988,17 @@ export default function ChatWidget() {
                                     : "w-[360px]"
                             }`
                     }`}
+                    onDragEnter={handleComposerDragEnter}
+                    onDragOver={handleComposerDragOver}
+                    onDragLeave={handleComposerDragLeave}
+                    onDrop={handleComposerDrop}
                 >
+                    {isDraggingImages && (
+                        <div className="pointer-events-none absolute inset-2 z-20 flex items-center justify-center rounded-2xl border border-dashed border-black/20 bg-white/80 text-xs font-medium text-neutral-700">
+                            {clientCourseConfig.text.dropImages}
+                        </div>
+                    )}
+
                     <div className="flex items-center justify-between bg-black px-5 py-4 text-white">
                         <div>
                             <p className="text-sm font-semibold">
@@ -894,6 +1096,11 @@ export default function ChatWidget() {
                                     1 &&
                                     message.role ===
                                     "assistant";
+                                const messageImageUrls =
+                                    message.imageUrls ??
+                                    (message.imageUrl
+                                        ? [message.imageUrl]
+                                        : []);
 
                                 return (
                                     <div
@@ -905,16 +1112,38 @@ export default function ChatWidget() {
                                                 : "mr-auto bg-white text-black shadow-sm"
                                         }`}
                                     >
-                                        {message.imageUrl && (
-                                            <img
-                                                src={message.imageUrl}
-                                                alt={
-                                                    clientCourseConfig
-                                                        .text
-                                                        .attachedImage
-                                                }
-                                                className="mb-3 max-h-48 w-full rounded-xl object-contain"
-                                            />
+                                        {messageImageUrls.length > 0 && (
+                                            <div
+                                                className={`mb-3 grid gap-2 ${
+                                                    messageImageUrls.length ===
+                                                    1
+                                                        ? "grid-cols-1"
+                                                        : "grid-cols-2"
+                                                }`}
+                                            >
+                                                {messageImageUrls.map(
+                                                    (
+                                                        imageUrl,
+                                                        imageIndex
+                                                    ) => (
+                                                        <img
+                                                            key={imageIndex}
+                                                            src={imageUrl}
+                                                            alt={
+                                                                clientCourseConfig
+                                                                    .text
+                                                                    .attachedImage
+                                                            }
+                                                            className={
+                                                                messageImageUrls.length ===
+                                                                1
+                                                                    ? "max-h-48 w-full rounded-xl object-contain"
+                                                                    : "h-24 w-full rounded-xl object-cover"
+                                                            }
+                                                        />
+                                                    )
+                                                )}
+                                            </div>
                                         )}
 
                                         {message.content ? (
@@ -1082,44 +1311,66 @@ export default function ChatWidget() {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    <div className="border-t bg-white p-3">
-                        {selectedImage && (
-                            <div className="mb-2 flex items-center gap-3 rounded-2xl border border-black/10 bg-neutral-50 p-2">
-                                <img
-                                    src={selectedImage.dataUrl}
-                                    alt={
-                                        clientCourseConfig.text
-                                            .imagePreview
-                                    }
-                                    className="h-14 w-14 rounded-xl object-cover"
-                                />
-
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-medium text-neutral-800">
-                                        {selectedImage.name}
-                                    </p>
-                                    <p className="text-[11px] text-neutral-500">
+                    <div
+                        className={`relative border-t bg-white p-3 transition ${
+                            isDraggingImages
+                                ? "bg-neutral-50"
+                                : ""
+                        }`}
+                    >
+                        {selectedImages.length > 0 && (
+                            <div className="mb-2 rounded-2xl border border-black/10 bg-neutral-50 p-2">
+                                <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                                    <p className="text-[11px] font-medium text-neutral-600">
                                         {
                                             clientCourseConfig.text
-                                                .imageReady
+                                                .attachedImages
                                         }
+                                    </p>
+                                    <p className="text-[11px] text-neutral-500">
+                                        {selectedImages.length} / {MAX_IMAGES}
                                     </p>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedImage(null);
-                                        setImageError(null);
-                                    }}
-                                    aria-label={
-                                        clientCourseConfig.text
-                                            .removeImage
-                                    }
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-500 transition hover:bg-black/5 hover:text-black"
-                                >
-                                    <X size={16} strokeWidth={2.2} />
-                                </button>
+                                <div className="flex gap-2 overflow-x-auto pb-1">
+                                    {selectedImages.map(
+                                        (image, index) => (
+                                            <div
+                                                key={`${image.name}-${index}`}
+                                                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-black/10 bg-white"
+                                                title={image.name}
+                                            >
+                                                <img
+                                                    src={image.dataUrl}
+                                                    alt={
+                                                        clientCourseConfig
+                                                            .text
+                                                            .imagePreview
+                                                    }
+                                                    className="h-full w-full object-cover"
+                                                />
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeSelectedImage(
+                                                            index
+                                                        )
+                                                    }
+                                                    aria-label={`${clientCourseConfig.text.removeImage} ${index + 1}`}
+                                                    className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-black"
+                                                >
+                                                    <X
+                                                        size={12}
+                                                        strokeWidth={
+                                                            2.4
+                                                        }
+                                                    />
+                                                </button>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
                             </div>
                         )}
 
@@ -1133,6 +1384,7 @@ export default function ChatWidget() {
                             ref={fileInputRef}
                             type="file"
                             accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                            multiple
                             onChange={(event) =>
                                 void handleImageSelection(event)
                             }
@@ -1196,7 +1448,7 @@ export default function ChatWidget() {
                                     isPreparingImage ||
                                     (
                                         input.trim().length === 0 &&
-                                        !selectedImage
+                                        selectedImages.length === 0
                                     )
                                 }
                                 aria-label={
