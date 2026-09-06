@@ -543,7 +543,11 @@ export default function ChatWidget() {
     function getSourceDisplay(
         source: Source
     ): SourceDisplay {
-        if (source.moduleNumber && source.module) {
+        if (
+            source.moduleNumber != null &&
+            source.moduleNumber > 0 &&
+            source.module
+        ) {
             return {
                 hasModule: true,
 
@@ -556,7 +560,10 @@ export default function ChatWidget() {
             };
         }
 
-        if (source.moduleNumber) {
+        if (
+            source.moduleNumber != null &&
+            source.moduleNumber > 0
+        ) {
             return {
                 hasModule: true,
 
@@ -564,6 +571,15 @@ export default function ChatWidget() {
                     `${clientCourseConfig.text.module} ` +
                     `${source.moduleNumber}`,
 
+                detailLabel:
+                    source.lesson || source.title,
+            };
+        }
+
+        if (source.module) {
+            return {
+                hasModule: true,
+                moduleLabel: source.module,
                 detailLabel:
                     source.lesson || source.title,
             };
