@@ -28,6 +28,7 @@ const ChatMessageSchema = z.object({
 });
 
 const MAX_IMAGE_DATA_URL_LENGTH = 5_000_000;
+const MAX_CHAT_MESSAGE_LENGTH = 800;
 const MAX_IMAGES = 6;
 const MAX_TOTAL_IMAGE_DATA_URL_LENGTH = 16_000_000;
 
@@ -49,7 +50,11 @@ const PdfSchema = z.object({
 
 const ChatRequestSchema = z
     .object({
-        message: z.string().max(800).optional().default(""),
+        message: z
+            .string()
+            .max(MAX_CHAT_MESSAGE_LENGTH)
+            .optional()
+            .default(""),
         history: z.array(ChatMessageSchema).max(8).optional(),
         images: z.array(ImageSchema).max(MAX_IMAGES).optional(),
         pdfs: z.array(PdfSchema).max(MAX_PDFS).optional(),
@@ -1573,6 +1578,12 @@ export async function POST(req: NextRequest) {
         const parsed = ChatRequestSchema.safeParse(body);
 
         if (!parsed.success) {
+            const isMessageTooLong = parsed.error.issues.some(
+                (issue) =>
+                    issue.path[0] === "message" &&
+                    issue.code === "too_big"
+            );
+
             console.error(
                 "Invalid chat request:",
                 JSON.stringify(parsed.error.flatten(), null, 2)
@@ -1580,7 +1591,11 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json(
                 {
-                    error: courseConfig.messages.invalidRequest,
+                    error: isMessageTooLong
+                        ? courseConfig.language === "en"
+                            ? "Your message is too long. Please keep it under 800 characters."
+                            : "Deine Nachricht ist zu lang. Bitte bleibe unter 800 Zeichen."
+                        : courseConfig.messages.invalidRequest,
                 },
                 { status: 400 }
             );

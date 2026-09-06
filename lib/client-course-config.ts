@@ -91,6 +91,8 @@ Just ask me anything.`,
                     "The PDF could not be uploaded. Please try another PDF.",
                 attachmentUploadingError:
                     "Please wait until the attachment upload is finished.",
+                messageTooLongError:
+                    "Your message is too long. Please keep it under 800 characters.",
 
                 genericError:
                     "Sorry, something went wrong. Please try again shortly.",
@@ -156,6 +158,8 @@ Frag mich einfach los.`,
                     "Das PDF konnte nicht hochgeladen werden. Bitte versuche ein anderes PDF.",
                 attachmentUploadingError:
                     "Bitte warte, bis der Upload abgeschlossen ist.",
+                messageTooLongError:
+                    "Deine Nachricht ist zu lang. Bitte bleibe unter 800 Zeichen.",
 
                 genericError:
                     "Sorry, da ist gerade etwas schiefgelaufen. Versuch es bitte gleich noch einmal.",

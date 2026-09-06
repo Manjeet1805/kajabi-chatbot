@@ -90,6 +90,7 @@ type SseEvent = {
 };
 
 const MAX_STORED_MESSAGES = 30;
+const MAX_CHAT_MESSAGE_LENGTH = 800;
 const MAX_IMAGES = 6;
 const MAX_IMAGE_FILE_SIZE = 8 * 1024 * 1024;
 const MAX_IMAGE_DATA_URL_LENGTH = 5_000_000;
@@ -1088,6 +1089,24 @@ export default function ChatWidget() {
             setImageError(
                 clientCourseConfig.text.attachmentUploadingError
             );
+            return;
+        }
+
+        if (text.length > MAX_CHAT_MESSAGE_LENGTH) {
+            setMessages((previousMessages) => [
+                ...previousMessages,
+                {
+                    role: "user",
+                    content: text,
+                },
+                {
+                    role: "assistant",
+                    content:
+                        clientCourseConfig.text
+                            .messageTooLongError,
+                },
+            ]);
+
             return;
         }
 
