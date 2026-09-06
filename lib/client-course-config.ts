@@ -41,7 +41,7 @@ export const clientCourseConfig = {
 
 I’m **${assistantName}** and I can help you with questions about Shopify, product research, advertising, business setup, general tax topics and course content.
 
-You can also attach a screenshot or product image for analysis.
+You can also attach screenshots, product images or PDFs for analysis.
 
 Just ask me anything.`,
 
@@ -56,24 +56,41 @@ Just ask me anything.`,
                 closeChat: "Close chat",
                 sendMessage: "Send message",
 
-                attachImage: "Attach image",
+                attachImage: "Attach file",
                 removeImage: "Remove image",
                 attachedImage: "Attached image",
                 attachedImages: "Attached images",
+                attachedPdfs: "Attached PDFs",
+                attachedPdf: "Attached PDF",
+                removePdf: "Remove PDF",
+                pdfReady: "Ready",
+                pdfUploading: "Uploading...",
+                dropImages: "Drop files here",
                 imagePreview: "Image preview",
                 imageReady: "Ready to send",
-                dropImages: "Drop images here",
                 processingImage: "Preparing image...",
                 defaultImageMessage:
                     "Please analyze this image.",
+                defaultAttachmentMessage:
+                    "Please analyze the attached file.",
                 maxImagesError:
                     "You can attach a maximum of 6 images.",
+                maxPdfsError:
+                    "You can attach a maximum of 3 PDFs.",
                 imageTypeError:
                     "Please upload a JPG, PNG, WebP, HEIC or HEIF image.",
+                pdfTypeError:
+                    "Please upload a valid PDF file.",
                 imageSizeError:
                     "The image is too large. Please use a smaller image.",
+                pdfSizeError:
+                    "The PDF is too large. Please use a smaller PDF.",
                 imageProcessingError:
                     "The image could not be processed. Please try another image.",
+                pdfUploadError:
+                    "The PDF could not be uploaded. Please try another PDF.",
+                attachmentUploadingError:
+                    "Please wait until the attachment upload is finished.",
 
                 genericError:
                     "Sorry, something went wrong. Please try again shortly.",
@@ -89,7 +106,7 @@ Just ask me anything.`,
 
 Ich bin **${assistantName}** und helfe dir bei Fragen rund um Shopify, Produktrecherche, Werbung, Gewerbe, Steuern allgemein und Kursinhalte.
 
-Du kannst mir auch einen Screenshot oder ein Produktbild zur Analyse senden.
+Du kannst mir auch Screenshots, Produktbilder oder PDFs zur Analyse senden.
 
 Frag mich einfach los.`,
 
@@ -104,24 +121,41 @@ Frag mich einfach los.`,
                 closeChat: "Chat schließen",
                 sendMessage: "Nachricht senden",
 
-                attachImage: "Bild anhängen",
+                attachImage: "Datei anhängen",
                 removeImage: "Bild entfernen",
                 attachedImage: "Angehängtes Bild",
                 attachedImages: "Angehängte Bilder",
+                attachedPdfs: "Angehängte PDFs",
+                attachedPdf: "Angehängtes PDF",
+                removePdf: "PDF entfernen",
+                pdfReady: "Bereit",
+                pdfUploading: "Wird hochgeladen...",
+                dropImages: "Dateien hier ablegen",
                 imagePreview: "Bildvorschau",
                 imageReady: "Bereit zum Senden",
-                dropImages: "Bilder hier ablegen",
                 processingImage: "Bild wird vorbereitet...",
                 defaultImageMessage:
                     "Bitte analysiere dieses Bild.",
+                defaultAttachmentMessage:
+                    "Bitte analysiere die angehängte Datei.",
                 maxImagesError:
                     "Du kannst maximal 6 Bilder anhängen.",
+                maxPdfsError:
+                    "Du kannst maximal 3 PDFs anhängen.",
                 imageTypeError:
                     "Bitte lade ein JPG-, PNG-, WebP-, HEIC- oder HEIF-Bild hoch.",
+                pdfTypeError:
+                    "Bitte lade eine gültige PDF-Datei hoch.",
                 imageSizeError:
                     "Das Bild ist zu groß. Bitte verwende ein kleineres Bild.",
+                pdfSizeError:
+                    "Das PDF ist zu groß. Bitte verwende ein kleineres PDF.",
                 imageProcessingError:
                     "Das Bild konnte nicht verarbeitet werden. Bitte versuche ein anderes Bild.",
+                pdfUploadError:
+                    "Das PDF konnte nicht hochgeladen werden. Bitte versuche ein anderes PDF.",
+                attachmentUploadingError:
+                    "Bitte warte, bis der Upload abgeschlossen ist.",
 
                 genericError:
                     "Sorry, da ist gerade etwas schiefgelaufen. Versuch es bitte gleich noch einmal.",

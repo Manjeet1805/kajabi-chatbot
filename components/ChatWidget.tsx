@@ -12,7 +12,9 @@ import {
     BookOpen,
     ChevronLeft,
     Expand,
-    ImagePlus,
+    FileText,
+    Loader2,
+    Paperclip,
     RotateCcw,
     Shrink,
     X,
@@ -21,6 +23,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { clientCourseConfig } from "@/lib/client-course-config";
 import { heicTo } from "heic-to";
+import {
+    isPdfFileName,
+    MAX_PDF_FILE_SIZE,
+    MAX_PDFS,
+} from "@/lib/pdf-attachments";
 
 type Source = {
     id: string;
@@ -45,12 +52,32 @@ type Message = {
     sources?: Source[];
     imageUrls?: string[];
     imageUrl?: string;
+    pdfs?: MessagePdf[];
 };
 
 type SelectedImage = {
     dataUrl: string;
     mimeType: "image/jpeg" | "image/png" | "image/webp";
     name: string;
+};
+
+type MessagePdf = {
+    name: string;
+    size: number;
+};
+
+type SelectedPdf = MessagePdf & {
+    id: string;
+    status: "uploading" | "ready" | "error";
+    fileId?: string;
+    token?: string;
+};
+
+type UploadedPdfResponse = {
+    fileId: string;
+    name: string;
+    size: number;
+    token: string;
 };
 
 type SseEvent = {
@@ -366,6 +393,112 @@ function getImageErrorMessage(error: unknown): string {
     return clientCourseConfig.text.imageProcessingError;
 }
 
+function isPdfFile(file: File): boolean {
+    return (
+        (file.type === "application/pdf" ||
+            file.type === "application/x-pdf") &&
+        isPdfFileName(file.name)
+    );
+}
+
+function isImageFile(file: File): boolean {
+    const extension = getFileExtension(file.name);
+
+    return (
+        file.type.startsWith("image/") ||
+        [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "heic",
+            "heif",
+        ].includes(extension)
+    );
+}
+
+function formatFileSize(size: number): string {
+    if (size < 1024 * 1024) {
+        return `${Math.max(1, Math.round(size / 1024))} KB`;
+    }
+
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getPdfErrorMessage(error: unknown): string {
+    const code =
+        error instanceof Error ? error.message : "";
+
+    if (code === "PDF_TYPE_NOT_ALLOWED") {
+        return clientCourseConfig.text.pdfTypeError;
+    }
+
+    if (code === "PDF_TOO_LARGE") {
+        return clientCourseConfig.text.pdfSizeError;
+    }
+
+    if (code === "MAX_PDFS_EXCEEDED") {
+        return clientCourseConfig.text.maxPdfsError;
+    }
+
+    return clientCourseConfig.text.pdfUploadError;
+}
+
+async function uploadPdf(file: File): Promise<UploadedPdfResponse> {
+    if (!isPdfFile(file)) {
+        throw new Error("PDF_TYPE_NOT_ALLOWED");
+    }
+
+    if (file.size > MAX_PDF_FILE_SIZE) {
+        throw new Error("PDF_TOO_LARGE");
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/files/pdf", {
+        method: "POST",
+        body: formData,
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        throw new Error(data?.error || "PDF_UPLOAD_FAILED");
+    }
+
+    return data as UploadedPdfResponse;
+}
+
+function deleteUploadedPdf(pdf: SelectedPdf) {
+    if (!pdf.fileId || !pdf.token) {
+        return;
+    }
+
+    void fetch("/api/files/pdf", {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            fileId: pdf.fileId,
+            name: pdf.name,
+            size: pdf.size,
+            token: pdf.token,
+        }),
+    }).catch(() => undefined);
+}
+
+function isReadyPdf(
+    pdf: SelectedPdf
+): pdf is SelectedPdf & { fileId: string; token: string } {
+    return (
+        pdf.status === "ready" &&
+        typeof pdf.fileId === "string" &&
+        typeof pdf.token === "string"
+    );
+}
+
 function isFileDrag(event: DragEvent<HTMLElement>): boolean {
     return Array.from(event.dataTransfer.types).includes(
         "Files"
@@ -389,11 +522,15 @@ export default function ChatWidget() {
     const [input, setInput] = useState("");
     const [selectedImages, setSelectedImages] =
         useState<SelectedImage[]>([]);
+    const [selectedPdfs, setSelectedPdfs] =
+        useState<SelectedPdf[]>([]);
     const [imageError, setImageError] =
         useState<string | null>(null);
     const [isDraggingImages, setIsDraggingImages] =
         useState(false);
     const [isPreparingImage, setIsPreparingImage] =
+        useState(false);
+    const [isUploadingPdf, setIsUploadingPdf] =
         useState(false);
     const [isLoading, setIsLoading] =
         useState(false);
@@ -406,6 +543,7 @@ export default function ChatWidget() {
     const fileInputRef =
         useRef<HTMLInputElement | null>(null);
     const selectedImagesRef = useRef<SelectedImage[]>([]);
+    const selectedPdfsRef = useRef<SelectedPdf[]>([]);
     const dragDepthRef = useRef(0);
 
     const shouldAnimateIframeRef = useRef(false);
@@ -501,7 +639,10 @@ export default function ChatWidget() {
     function resetConversation() {
         setMessages(INITIAL_MESSAGES);
         selectedImagesRef.current = [];
+        selectedPdfsRef.current.forEach(deleteUploadedPdf);
+        selectedPdfsRef.current = [];
         setSelectedImages([]);
+        setSelectedPdfs([]);
         setImageError(null);
         setIsDraggingImages(false);
         dragDepthRef.current = 0;
@@ -592,7 +733,12 @@ export default function ChatWidget() {
     }
 
     async function addImageFiles(files: File[]) {
-        if (isLoading || isPreparingImage || files.length === 0) {
+        if (
+            isLoading ||
+            isPreparingImage ||
+            isUploadingPdf ||
+            files.length === 0
+        ) {
             return;
         }
 
@@ -692,14 +838,146 @@ export default function ChatWidget() {
         }
     }
 
-    async function handleImageSelection(
+    async function addPdfFiles(files: File[]) {
+        if (
+            isLoading ||
+            isPreparingImage ||
+            isUploadingPdf ||
+            files.length === 0
+        ) {
+            return;
+        }
+
+        const remainingSlots =
+            MAX_PDFS - selectedPdfsRef.current.length;
+
+        if (remainingSlots <= 0) {
+            setImageError(clientCourseConfig.text.maxPdfsError);
+            return;
+        }
+
+        const filesToUpload = files.slice(0, remainingSlots);
+        const hasTooManyFiles = files.length > remainingSlots;
+
+        setImageError(null);
+        setIsUploadingPdf(true);
+
+        const uploadingPdfs: SelectedPdf[] = filesToUpload.map(
+            (file) => ({
+                id:
+                    globalThis.crypto?.randomUUID?.() ??
+                    `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+                name: file.name,
+                size: file.size,
+                status: "uploading",
+            })
+        );
+
+        selectedPdfsRef.current = [
+            ...selectedPdfsRef.current,
+            ...uploadingPdfs,
+        ];
+        setSelectedPdfs(selectedPdfsRef.current);
+
+        try {
+            const results = await Promise.allSettled(
+                filesToUpload.map((file) => uploadPdf(file))
+            );
+
+            let firstError: unknown = null;
+            const currentPdfIds = new Set(
+                selectedPdfsRef.current.map((pdf) => pdf.id)
+            );
+
+            results.forEach((result, index) => {
+                if (
+                    result.status === "fulfilled" &&
+                    !currentPdfIds.has(uploadingPdfs[index].id)
+                ) {
+                    deleteUploadedPdf({
+                        id: uploadingPdfs[index].id,
+                        name: result.value.name,
+                        size: result.value.size,
+                        status: "ready",
+                        fileId: result.value.fileId,
+                        token: result.value.token,
+                    });
+                }
+            });
+
+            const nextPdfs = selectedPdfsRef.current.map((pdf) => {
+                const uploadIndex = uploadingPdfs.findIndex(
+                    (uploadingPdf) => uploadingPdf.id === pdf.id
+                );
+
+                if (uploadIndex === -1) {
+                    return pdf;
+                }
+
+                const result = results[uploadIndex];
+
+                if (result.status === "fulfilled") {
+                    return {
+                        ...pdf,
+                        name: result.value.name,
+                        size: result.value.size,
+                        status: "ready" as const,
+                        fileId: result.value.fileId,
+                        token: result.value.token,
+                    };
+                }
+
+                firstError ??= result.reason;
+
+                return {
+                    ...pdf,
+                    status: "error" as const,
+                };
+            });
+
+            selectedPdfsRef.current = nextPdfs;
+            setSelectedPdfs(nextPdfs);
+
+            if (firstError) {
+                setImageError(getPdfErrorMessage(firstError));
+            } else if (hasTooManyFiles) {
+                setImageError(clientCourseConfig.text.maxPdfsError);
+            }
+        } finally {
+            setIsUploadingPdf(false);
+        }
+    }
+
+    async function addAttachmentFiles(files: File[]) {
+        const imageFiles = files.filter(
+            (file) => isImageFile(file) && !isPdfFile(file)
+        );
+        const pdfFiles = files.filter(isPdfFile);
+        const unsupportedFiles = files.filter(
+            (file) => !isImageFile(file) && !isPdfFile(file)
+        );
+
+        if (unsupportedFiles.length > 0) {
+            setImageError(clientCourseConfig.text.pdfTypeError);
+        }
+
+        if (imageFiles.length > 0) {
+            await addImageFiles(imageFiles);
+        }
+
+        if (pdfFiles.length > 0) {
+            await addPdfFiles(pdfFiles);
+        }
+    }
+
+    async function handleAttachmentSelection(
         event: ChangeEvent<HTMLInputElement>
     ) {
         const files = Array.from(event.target.files ?? []);
 
         event.target.value = "";
 
-        await addImageFiles(files);
+        await addAttachmentFiles(files);
     }
 
     function removeSelectedImage(indexToRemove: number) {
@@ -709,6 +987,22 @@ export default function ChatWidget() {
 
         selectedImagesRef.current = nextImages;
         setSelectedImages(nextImages);
+        setImageError(null);
+    }
+
+    function removeSelectedPdf(indexToRemove: number) {
+        const pdfToRemove = selectedPdfsRef.current[indexToRemove];
+
+        if (pdfToRemove) {
+            deleteUploadedPdf(pdfToRemove);
+        }
+
+        const nextPdfs = selectedPdfsRef.current.filter(
+            (_pdf, index) => index !== indexToRemove
+        );
+
+        selectedPdfsRef.current = nextPdfs;
+        setSelectedPdfs(nextPdfs);
         setImageError(null);
     }
 
@@ -766,18 +1060,34 @@ export default function ChatWidget() {
         setIsDraggingImages(false);
 
         const files = Array.from(event.dataTransfer.files);
-        void addImageFiles(files);
+        void addAttachmentFiles(files);
     }
 
     async function sendMessage() {
         const text = input.trim();
         const imagesToSend = selectedImagesRef.current;
+        const pdfsToSend = selectedPdfsRef.current.filter(isReadyPdf);
+        const hasIncompletePdfs = selectedPdfsRef.current.some(
+            (pdf) => !isReadyPdf(pdf)
+        );
 
         if (
-            (!text && imagesToSend.length === 0) ||
+            (
+                !text &&
+                imagesToSend.length === 0 &&
+                pdfsToSend.length === 0
+            ) ||
             isLoading ||
-            isPreparingImage
+            isPreparingImage ||
+            isUploadingPdf
         ) {
+            return;
+        }
+
+        if (hasIncompletePdfs) {
+            setImageError(
+                clientCourseConfig.text.attachmentUploadingError
+            );
             return;
         }
 
@@ -794,8 +1104,11 @@ export default function ChatWidget() {
             return;
         }
 
-        const displayText =
-            text || clientCourseConfig.text.defaultImageMessage;
+        const displayText = text
+            ? text
+            : pdfsToSend.length > 0
+                ? clientCourseConfig.text.defaultAttachmentMessage
+                : clientCourseConfig.text.defaultImageMessage;
 
         const assistantMessageIndex =
             messages.length + 1;
@@ -808,6 +1121,10 @@ export default function ChatWidget() {
                 imageUrls: imagesToSend.map(
                     (image) => image.dataUrl
                 ),
+                pdfs: pdfsToSend.map((pdf) => ({
+                    name: pdf.name,
+                    size: pdf.size,
+                })),
             },
             {
                 role: "assistant",
@@ -818,7 +1135,9 @@ export default function ChatWidget() {
 
         setInput("");
         selectedImagesRef.current = [];
+        selectedPdfsRef.current = [];
         setSelectedImages([]);
+        setSelectedPdfs([]);
         setImageError(null);
         setIsLoading(true);
 
@@ -837,6 +1156,14 @@ export default function ChatWidget() {
                         ? imagesToSend.map((image) => ({
                             dataUrl: image.dataUrl,
                             mimeType: image.mimeType,
+                        }))
+                        : undefined,
+                    pdfs: pdfsToSend.length
+                        ? pdfsToSend.map((pdf) => ({
+                            fileId: pdf.fileId,
+                            name: pdf.name,
+                            size: pdf.size,
+                            token: pdf.token,
                         }))
                         : undefined,
                 }),
@@ -1117,6 +1444,8 @@ export default function ChatWidget() {
                                     (message.imageUrl
                                         ? [message.imageUrl]
                                         : []);
+                                const messagePdfs =
+                                    message.pdfs ?? [];
 
                                 return (
                                     <div
@@ -1157,6 +1486,41 @@ export default function ChatWidget() {
                                                                     : "h-24 w-full rounded-xl object-cover"
                                                             }
                                                         />
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {messagePdfs.length > 0 && (
+                                            <div className="mb-3 space-y-2">
+                                                {messagePdfs.map(
+                                                    (pdf, pdfIndex) => (
+                                                        <div
+                                                            key={`${pdf.name}-${pdfIndex}`}
+                                                            className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-left"
+                                                            title={pdf.name}
+                                                        >
+                                                            <FileText
+                                                                size={16}
+                                                                strokeWidth={
+                                                                    2.2
+                                                                }
+                                                                className="shrink-0 text-white/80"
+                                                            />
+
+                                                            <div className="min-w-0">
+                                                                <p className="truncate text-xs font-medium text-white">
+                                                                    {
+                                                                        pdf.name
+                                                                    }
+                                                                </p>
+                                                                <p className="text-[11px] text-white/60">
+                                                                    {formatFileSize(
+                                                                        pdf.size
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                     )
                                                 )}
                                             </div>
@@ -1334,17 +1698,22 @@ export default function ChatWidget() {
                                 : ""
                         }`}
                     >
-                        {selectedImages.length > 0 && (
+                        {(selectedImages.length > 0 ||
+                            selectedPdfs.length > 0) && (
                             <div className="mb-2 rounded-2xl border border-black/10 bg-neutral-50 p-2">
                                 <div className="mb-2 flex items-center justify-between gap-2 px-1">
                                     <p className="text-[11px] font-medium text-neutral-600">
-                                        {
-                                            clientCourseConfig.text
-                                                .attachedImages
-                                        }
+                                        {selectedPdfs.length > 0
+                                            ? clientCourseConfig.text
+                                                .attachedPdfs
+                                            : clientCourseConfig.text
+                                                .attachedImages}
                                     </p>
                                     <p className="text-[11px] text-neutral-500">
                                         {selectedImages.length} / {MAX_IMAGES}
+                                        {selectedPdfs.length > 0
+                                            ? ` · ${selectedPdfs.length} / ${MAX_PDFS}`
+                                            : ""}
                                     </p>
                                 </div>
 
@@ -1386,6 +1755,73 @@ export default function ChatWidget() {
                                             </div>
                                         )
                                     )}
+
+                                    {selectedPdfs.map(
+                                        (pdf, index) => (
+                                            <div
+                                                key={pdf.id}
+                                                className="relative flex h-14 w-40 shrink-0 items-center gap-2 rounded-xl border border-black/10 bg-white px-2"
+                                                title={pdf.name}
+                                            >
+                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600">
+                                                    {pdf.status ===
+                                                    "uploading" ? (
+                                                        <Loader2
+                                                            size={16}
+                                                            strokeWidth={
+                                                                2.2
+                                                            }
+                                                            className="animate-spin"
+                                                        />
+                                                    ) : (
+                                                        <FileText
+                                                            size={17}
+                                                            strokeWidth={
+                                                                2.2
+                                                            }
+                                                        />
+                                                    )}
+                                                </div>
+
+                                                <div className="min-w-0 pr-5">
+                                                    <p className="truncate text-[11px] font-medium text-neutral-800">
+                                                        {pdf.name}
+                                                    </p>
+                                                    <p className="truncate text-[10px] text-neutral-500">
+                                                        {pdf.status ===
+                                                        "uploading"
+                                                            ? clientCourseConfig
+                                                                .text
+                                                                .pdfUploading
+                                                            : pdf.status ===
+                                                                "error"
+                                                              ? clientCourseConfig
+                                                                  .text
+                                                                  .pdfUploadError
+                                                              : `${clientCourseConfig.text.pdfReady} · ${formatFileSize(pdf.size)}`}
+                                                    </p>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeSelectedPdf(
+                                                            index
+                                                        )
+                                                    }
+                                                    aria-label={`${clientCourseConfig.text.removePdf} ${index + 1}`}
+                                                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-black"
+                                                >
+                                                    <X
+                                                        size={12}
+                                                        strokeWidth={
+                                                            2.4
+                                                        }
+                                                    />
+                                                </button>
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -1399,10 +1835,10 @@ export default function ChatWidget() {
                         <input
                             ref={fileInputRef}
                             type="file"
-                            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif,application/pdf,.pdf"
                             multiple
                             onChange={(event) =>
-                                void handleImageSelection(event)
+                                void handleAttachmentSelection(event)
                             }
                             className="hidden"
                         />
@@ -1414,7 +1850,9 @@ export default function ChatWidget() {
                                     fileInputRef.current?.click()
                                 }
                                 disabled={
-                                    isLoading || isPreparingImage
+                                    isLoading ||
+                                    isPreparingImage ||
+                                    isUploadingPdf
                                 }
                                 aria-label={
                                     clientCourseConfig.text
@@ -1422,7 +1860,7 @@ export default function ChatWidget() {
                                 }
                                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 transition hover:bg-black/5 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                                <ImagePlus
+                                <Paperclip
                                     size={19}
                                     strokeWidth={2.2}
                                 />
@@ -1449,6 +1887,9 @@ export default function ChatWidget() {
                                     isPreparingImage
                                         ? clientCourseConfig.text
                                             .processingImage
+                                        : isUploadingPdf
+                                          ? clientCourseConfig.text
+                                              .pdfUploading
                                         : clientCourseConfig.text
                                             .inputPlaceholder
                                 }
@@ -1462,9 +1903,18 @@ export default function ChatWidget() {
                                 disabled={
                                     isLoading ||
                                     isPreparingImage ||
+                                    isUploadingPdf ||
+                                    selectedPdfs.some(
+                                        (pdf) => !isReadyPdf(pdf)
+                                    ) ||
                                     (
                                         input.trim().length === 0 &&
-                                        selectedImages.length === 0
+                                        selectedImages.length === 0 &&
+                                        selectedPdfs.every(
+                                            (pdf) =>
+                                                pdf.status !==
+                                                "ready"
+                                        )
                                     )
                                 }
                                 aria-label={

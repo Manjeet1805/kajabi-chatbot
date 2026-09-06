@@ -10,6 +10,13 @@ import {
     chatDailyRateLimit,
 } from "@/lib/rate-limit";
 import { courseConfig } from "@/lib/course-config";
+import {
+    MAX_PDF_FILE_SIZE,
+    MAX_PDFS,
+    PDF_FILE_ID_PATTERN,
+    sanitizePdfFileName,
+} from "@/lib/pdf-attachments";
+import { verifyPdfFileToken } from "@/lib/pdf-file-token";
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -33,19 +40,32 @@ const ImageSchema = z.object({
     mimeType: z.literal("image/webp"),
 });
 
+const PdfSchema = z.object({
+    fileId: z.string().regex(PDF_FILE_ID_PATTERN),
+    name: z.string().min(1).max(120),
+    size: z.number().int().positive().max(MAX_PDF_FILE_SIZE),
+    token: z.string().regex(/^[a-f0-9]{64}$/),
+});
+
 const ChatRequestSchema = z
     .object({
         message: z.string().max(800).optional().default(""),
         history: z.array(ChatMessageSchema).max(8).optional(),
         images: z.array(ImageSchema).max(MAX_IMAGES).optional(),
+        pdfs: z.array(PdfSchema).max(MAX_PDFS).optional(),
     })
     .superRefine((value, context) => {
         const images = value.images ?? [];
+        const pdfs = value.pdfs ?? [];
 
-        if (!value.message.trim() && images.length === 0) {
+        if (
+            !value.message.trim() &&
+            images.length === 0 &&
+            pdfs.length === 0
+        ) {
             context.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: "Message or image is required.",
+                message: "Message or attachment is required.",
                 path: ["message"],
             });
         }
@@ -65,6 +85,26 @@ const ChatRequestSchema = z
                     "Combined image payload is too large.",
                 path: ["images"],
             });
+        }
+
+        for (const [index, pdf] of pdfs.entries()) {
+            const sanitizedName = sanitizePdfFileName(pdf.name);
+
+            if (
+                sanitizedName !== pdf.name ||
+                !verifyPdfFileToken(
+                    pdf.fileId,
+                    pdf.name,
+                    pdf.size,
+                    pdf.token
+                )
+            ) {
+                context.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Invalid PDF file reference.",
+                    path: ["pdfs", index],
+                });
+            }
         }
     });
 
@@ -163,6 +203,12 @@ function dedupeVisibleSources(sources: StreamedSource[]): StreamedSource[] {
     return dedupedSources;
 }
 
+async function deleteOpenAiFiles(fileIds: string[]) {
+    await Promise.allSettled(
+        fileIds.map((fileId) => openai.files.delete(fileId))
+    );
+}
+
 function buildSystemPrompt(): string {
     const isEnglishCourse = courseConfig.language === "en";
 
@@ -259,6 +305,9 @@ LEGAL AND FINANCIAL TOPICS
 
 GENERAL IMAGE ANALYSIS
 - The user may attach screenshots of Meta Ads statistics, AliExpress products, supplier listings, product pages, Shopify stores, creatives or other dropshipping-related material.
+- The user may also attach PDFs. Treat attached PDFs as temporary user-provided evidence, separate from retrieved course knowledge.
+- Use PDF contents only when relevant to the user's question. Do not automatically summarize the entire PDF unless the user asks for a summary.
+- A PDF attachment alone does not trigger product-evaluation mode. The user's actual intent determines whether product-evaluation mode applies.
 - First determine internally which image category fits best:
   1. Supplier or AliExpress product
   2. Shopify product page
@@ -937,6 +986,9 @@ RECHTLICHES UND FINANZIELLES
 
 ALLGEMEINE BILDANALYSE
 - Nutzer können Screenshots von Meta-Ads-Kennzahlen, AliExpress-Produkten, Lieferantenangeboten, Produktseiten, Shopify-Shops, Werbeanzeigen, Creatives oder anderem Dropshipping-Material hochladen.
+- Nutzer können auch PDFs anhängen. Behandle angehängte PDFs als temporäre Nutzer-Belege, getrennt vom abgerufenen Kurswissen.
+- Nutze PDF-Inhalte nur, wenn sie für die Frage des Nutzers relevant sind. Fasse nicht automatisch das gesamte PDF zusammen, außer der Nutzer fragt nach einer Zusammenfassung.
+- Ein PDF-Anhang allein löst keinen Produktbewertungsmodus aus. Die tatsächliche Absicht des Nutzers bestimmt, ob Produktbewertung gilt.
 - Bestimme zunächst intern, welche Bildkategorie am besten passt:
   1. Lieferanten- oder AliExpress-Produkt
   2. Shopify-Produktseite
@@ -1537,15 +1589,18 @@ export async function POST(req: NextRequest) {
         const userMessage = parsed.data.message.trim();
         const history = parsed.data.history ?? [];
         const images = parsed.data.images ?? [];
+        const pdfs = parsed.data.pdfs ?? [];
         const hasImages = images.length > 0;
+        const hasPdfs = pdfs.length > 0;
+        const hasAttachments = hasImages || hasPdfs;
 
-        const fallbackImageQuestion =
+        const fallbackAttachmentQuestion =
             courseConfig.language === "en"
-                ? "Analyze the attached image or images using the relevant course criteria."
-                : "Analysiere das angehängte Bild oder die angehängten Bilder anhand der passenden Kurskriterien.";
+                ? "Analyze the attached file or files and answer based on the relevant course information."
+                : "Analysiere die angehängte Datei oder die angehängten Dateien und beantworte die Frage anhand der relevanten Kursinformationen.";
 
         const effectiveUserMessage =
-            userMessage || fallbackImageQuestion;
+            userMessage || fallbackAttachmentQuestion;
 
         const knowledgeSearchQuery = effectiveUserMessage;
 
@@ -1629,14 +1684,10 @@ Choose the correct response mode from the system prompt based on the user's inte
 For exact SOP or course-rule questions, answer directly from the most specific relevant course information and keep the answer concise.
 Use Markdown paragraph spacing when the answer is structured, but do not force product-evaluation sections or numbered reasons for normal SOP, course, technical or analytics questions.
 
-${hasImages
+${hasAttachments
                                             ? courseConfig.language === "en"
-                                                ? images.length === 1
-                                                    ? "An image is attached. Use it only as evidence needed to answer the user's actual question. Do not describe or acknowledge the image first unless this is a genuine product evaluation or the description is necessary. For Meta Ads screenshots, if the visible evidence is not enough to satisfy a complete SOP rule, state what is missing and stop."
-                                                    : `${images.length} images are attached. Analyze them together when useful, especially if they show different parts of the same product page, Meta Ads screenshots, product images, creatives or store screenshots. Use them only as evidence needed to answer the user's actual question. Do not describe or acknowledge the images first unless this is a genuine product evaluation or the description is necessary. For Meta Ads screenshots, if the visible evidence is not enough to satisfy a complete SOP rule, state what is missing and stop.`
-                                                : images.length === 1
-                                                    ? "Ein Bild ist angehängt. Nutze es nur als notwendige Grundlage für die tatsächliche Frage des Nutzers. Beschreibe oder bestätige das Bild nicht zuerst, außer es handelt sich um eine echte Produktbewertung oder die Beschreibung ist notwendig. Bei Meta-Ads-Screenshots: Wenn die sichtbaren Belege keine vollständige SOP-Regel erfüllen, nenne die fehlenden Informationen und stoppe dort."
-                                                    : `${images.length} Bilder sind angehängt. Analysiere sie gemeinsam, wenn es sinnvoll ist, besonders wenn sie unterschiedliche Bereiche derselben Produktseite, Meta-Ads-Screenshots, Produktbilder, Creatives oder Shop-Screenshots zeigen. Nutze sie nur als notwendige Grundlage für die tatsächliche Frage des Nutzers. Beschreibe oder bestätige die Bilder nicht zuerst, außer es handelt sich um eine echte Produktbewertung oder die Beschreibung ist notwendig. Bei Meta-Ads-Screenshots: Wenn die sichtbaren Belege keine vollständige SOP-Regel erfüllen, nenne die fehlenden Informationen und stoppe dort.`
+                                                ? `${images.length > 0 ? `${images.length} image${images.length === 1 ? " is" : "s are"} attached. ` : ""}${pdfs.length > 0 ? `${pdfs.length} PDF${pdfs.length === 1 ? " is" : "s are"} attached. ` : ""}Use attachments only as evidence needed to answer the user's actual question. Do not summarize an entire PDF unless asked. Distinguish attached file evidence from retrieved course information. Do not describe or acknowledge attachments first unless this is a genuine product evaluation or the description is necessary. For Meta Ads screenshots or reports, if the visible or document evidence is not enough to satisfy a complete SOP rule, state what is missing and stop.`
+                                                : `${images.length > 0 ? `${images.length} Bild${images.length === 1 ? " ist" : "er sind"} angehängt. ` : ""}${pdfs.length > 0 ? `${pdfs.length} PDF${pdfs.length === 1 ? " ist" : "s sind"} angehängt. ` : ""}Nutze Anhänge nur als notwendige Grundlage für die tatsächliche Frage des Nutzers. Fasse ein vollständiges PDF nicht automatisch zusammen, außer der Nutzer fragt danach. Trenne angehängte Datei-Belege von abgerufenen Kursinformationen. Beschreibe oder bestätige Anhänge nicht zuerst, außer es handelt sich um eine echte Produktbewertung oder die Beschreibung ist notwendig. Bei Meta-Ads-Screenshots oder Reports: Wenn die sichtbaren oder dokumentierten Belege keine vollständige SOP-Regel erfüllen, nenne die fehlenden Informationen und stoppe dort.`
                                             : ""}
 `,
                                     },
@@ -1644,6 +1695,10 @@ ${hasImages
                                         type: "input_image" as const,
                                         image_url: image.dataUrl,
                                         detail: "high" as const,
+                                    })),
+                                    ...pdfs.map((pdf) => ({
+                                        type: "input_file" as const,
+                                        file_id: pdf.fileId,
                                     })),
                                 ],
                             },
@@ -1668,9 +1723,21 @@ ${hasImages
                         encoder.encode(createStreamEvent("done", { ok: true }))
                     );
 
+                    if (hasPdfs) {
+                        await deleteOpenAiFiles(
+                            pdfs.map((pdf) => pdf.fileId)
+                        );
+                    }
+
                     controller.close();
                 } catch (error) {
                     console.error("Streaming error:", error);
+
+                    if (hasPdfs) {
+                        await deleteOpenAiFiles(
+                            pdfs.map((pdf) => pdf.fileId)
+                        );
+                    }
 
                     controller.enqueue(
                         encoder.encode(
