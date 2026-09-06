@@ -208,6 +208,26 @@ function dedupeVisibleSources(sources: StreamedSource[]): StreamedSource[] {
     return dedupedSources;
 }
 
+function isDetailedMultiAttachmentAnalyticsRequest(
+    message: string,
+    attachmentCount: number
+): boolean {
+    if (attachmentCount < 3) {
+        return false;
+    }
+
+    const normalizedMessage = message.toLowerCase();
+
+    return (
+        /\b(meta|ads?|campaign|ad set|analytics|screenshot|report)\b/.test(
+            normalizedMessage
+        ) &&
+        /\b(analy[sz]e|analyse|auswert|bewert|compare|vergleich|sop)\b/.test(
+            normalizedMessage
+        )
+    );
+}
+
 async function deleteOpenAiFiles(fileIds: string[]) {
     await Promise.allSettled(
         fileIds.map((fileId) => openai.files.delete(fileId))
@@ -737,6 +757,27 @@ When the image shows a store homepage or storefront, assess:
 - Visible conversion barriers
 
 Finish with the highest-priority improvements rather than a long list of minor design preferences.
+
+MULTI-IMAGE ANALYTICS RECONSTRUCTION
+Use this section for multiple Meta Ads or analytics screenshots before evaluating performance.
+- First determine whether the screenshots belong to the same account, campaign, ad set table or report.
+- Check whether some screenshots are horizontally scrolled views of the same rows that show different metric columns.
+- Check whether the screenshots represent one date range or multiple date ranges.
+- If rows can be matched reliably, reconstruct one logical dataset before analyzing it. Use stable identifiers such as row order, visible or truncated ad set name, budget, start date, delivery status, spend, results and other stable visible identifiers.
+- If row matching is uncertain, state the uncertainty and do not combine unrelated rows.
+- Do not treat each screenshot as a separate "Ad Set Group" when the screenshots are different column views of the same table.
+- Preserve separate time windows. Do not merge metrics from different date ranges into one value.
+- If date windows overlap, compare them descriptively only. Do not claim they prove a clean before/after trend or calculate a trend such as CPM increased by X% unless the windows are non-overlapping and comparable or the user supplies the comparison.
+- When a logical dataset is reconstructed, analyze each matched ad set individually using only useful information: identity, relevant visible metrics across available windows, triggered SOP rules, reliable action if any and missing information.
+- Relative marketing-efficiency comparisons are allowed, such as lowest visible CPA, lowest CPM, more stable visible metrics or largest purchase sample. Clearly keep these separate from SOP actions.
+- State explicitly when a ranking is only a relative marketing-efficiency comparison and not an SOP profit-margin decision.
+- Purchase ROAS is not profit margin and must not substitute for profit margin. If Purchase ROAS is below 1 in a given window, you may state that revenue is below ad spend for that same window and therefore profit margin cannot be positive after COGS, shipping and fees. Do not apply a multi-day SOP cut or turn-off rule unless the required duration, sample and rolling-average condition is satisfied.
+- Treat short windows with only 1-3 purchases cautiously. Do not treat one-purchase or very-small-sample swings as stable performance trends.
+- Use the SOP rolling-average guidance when relevant: use a 3-day rolling average when spend is high, a 7-day rolling average when spend is low and never decide on a single day.
+- Apply creative-refresh triggers only when the exact trigger is visible or supplied: frequency above 2.5 over 7 days, hook rate 20% below the creative's first-week baseline or 14+ days without anything new.
+- If last significant edit is 13 days ago, say it is approaching the 14-day trigger, not that the trigger has fired.
+- Do not assume "last significant edit" definitely means last new creative unless the visible context or course information supports that equivalence.
+- For complex multi-image Meta Ads analysis, prefer: brief screenshot relationship, per-ad-set analysis, relative comparison, final SOP conclusion and exact missing data. Use a concise table only if it improves clarity.
 
 META ADS AND FUNNEL ANALYSIS
 Use this section when the user asks for a broad Meta Ads or funnel analysis.
@@ -1379,6 +1420,27 @@ Wenn das Bild eine Shop-Startseite oder Storefront zeigt, prüfe:
 
 Schließe mit den wichtigsten Verbesserungen nach Priorität ab, statt viele unwichtige Designvorlieben aufzuzählen.
 
+MULTI-IMAGE-REKONSTRUKTION FÜR ANALYTICS
+Nutze diesen Abschnitt bei mehreren Meta-Ads- oder Analytics-Screenshots, bevor du Performance bewertest.
+- Prüfe zuerst, ob die Screenshots zum selben Account, zur selben Kampagne, Ad-Set-Tabelle oder demselben Report gehören.
+- Prüfe, ob einzelne Screenshots horizontal gescrollte Ansichten derselben Zeilen sind, die unterschiedliche Kennzahlenspalten zeigen.
+- Prüfe, ob die Screenshots einen oder mehrere Datumsbereiche zeigen.
+- Wenn Zeilen zuverlässig zugeordnet werden können, rekonstruiere vor der Analyse einen logischen Datensatz. Nutze stabile Merkmale wie Zeilenreihenfolge, sichtbaren oder abgeschnittenen Ad-Set-Namen, Budget, Startdatum, Auslieferungsstatus, Spend, Results und andere stabile sichtbare Identifikatoren.
+- Wenn die Zeilenzuordnung unsicher ist, sage das und kombiniere keine nicht zusammengehörenden Zeilen.
+- Behandle nicht jeden Screenshot als eigene "Ad Set Group", wenn die Screenshots unterschiedliche Spaltenansichten derselben Tabelle sind.
+- Halte unterschiedliche Zeitfenster getrennt. Fasse Kennzahlen aus verschiedenen Datumsbereichen nicht zu einem Wert zusammen.
+- Wenn Datumsfenster überlappen, vergleiche sie nur beschreibend. Behaupte keinen sauberen Vorher-nachher-Trend und berechne keinen Trend wie CPM ist um X% gestiegen, außer die Fenster sind nicht überlappend und vergleichbar oder der Nutzer liefert den Vergleich.
+- Wenn ein logischer Datensatz rekonstruiert wurde, analysiere jedes zugeordnete Ad Set einzeln und nutze nur hilfreiche Informationen: Identität, relevante sichtbare Kennzahlen je Zeitfenster, ausgelöste SOP-Regeln, zuverlässige Handlung falls vorhanden und fehlende Informationen.
+- Relative Marketing-Effizienzvergleiche sind erlaubt, etwa niedrigster sichtbarer CPA, niedrigster CPM, stabilere sichtbare Kennzahlen oder größte Purchase-Stichprobe. Trenne diese klar von SOP-Handlungen.
+- Sage ausdrücklich, wenn ein Ranking nur ein relativer Marketing-Effizienzvergleich ist und keine SOP-Profit-Margin-Entscheidung.
+- Purchase ROAS ist nicht Profit Margin und darf Profit Margin nicht ersetzen. Wenn Purchase ROAS in einem Zeitfenster unter 1 liegt, darfst du sagen, dass der Umsatz in genau diesem Zeitfenster unter dem Ad Spend liegt und Profit Margin nach COGS, Versand und Gebühren deshalb nicht positiv sein kann. Wende aber keine mehrtägige SOP-Cut- oder Turn-Off-Regel an, außer die nötige Dauer, Stichprobe und Rolling-Average-Bedingung ist erfüllt.
+- Behandle kurze Zeitfenster mit nur 1-3 Purchases vorsichtig. Werte Schwankungen mit einem Purchase oder sehr kleiner Stichprobe nicht als stabilen Performance-Trend.
+- Nutze die SOP-Rolling-Average-Regel, wenn relevant: 3-Tage-Rolling-Average bei hohem Spend, 7-Tage-Rolling-Average bei niedrigem Spend und niemals auf Basis eines einzelnen Tages entscheiden.
+- Wende Creative-Refresh-Trigger nur an, wenn der exakte Trigger sichtbar ist oder geliefert wurde: Frequency über 2,5 über 7 Tage, Hook Rate 20% unter dem First-Week-Baseline-Wert oder 14+ Tage ohne etwas Neues.
+- Wenn Last significant edit 13 Tage anzeigt, sage, dass der 14-Tage-Trigger näherkommt, nicht dass er bereits ausgelöst wurde.
+- Setze "last significant edit" nicht automatisch mit letzter neuer Creative gleich, außer sichtbarer Kontext oder Kursinformationen stützen diese Gleichsetzung.
+- Für komplexe Multi-Image-Meta-Ads-Analysen bevorzuge: kurze Erklärung der Screenshot-Beziehung, Analyse pro Ad Set, relativer Vergleich, finales SOP-Fazit und exakt fehlende Daten. Nutze eine kompakte Tabelle nur, wenn sie die Klarheit verbessert.
+
 META-ADS- UND FUNNELANALYSE
 Nutze diesen Abschnitt, wenn der Nutzer eine breite Meta-Ads- oder Funnelanalyse möchte.
 Bei exakten SOP- oder Kursregel-Fragen nutze nicht die vollständige Funnelanalyse-Struktur, wenn die abgerufene SOP-Regel die Frage direkt beantwortet.
@@ -1608,6 +1670,7 @@ export async function POST(req: NextRequest) {
         const hasImages = images.length > 0;
         const hasPdfs = pdfs.length > 0;
         const hasAttachments = hasImages || hasPdfs;
+        const attachmentCount = images.length + pdfs.length;
 
         const fallbackAttachmentQuestion =
             courseConfig.language === "en"
@@ -1616,6 +1679,13 @@ export async function POST(req: NextRequest) {
 
         const effectiveUserMessage =
             userMessage || fallbackAttachmentQuestion;
+        const maxOutputTokens =
+            isDetailedMultiAttachmentAnalyticsRequest(
+                effectiveUserMessage,
+                attachmentCount
+            )
+                ? 1600
+                : 800;
 
         const knowledgeSearchQuery = effectiveUserMessage;
 
@@ -1718,7 +1788,7 @@ ${hasAttachments
                                 ],
                             },
                         ],
-                        max_output_tokens: 800,
+                        max_output_tokens: maxOutputTokens,
                         stream: true,
                     });
 
